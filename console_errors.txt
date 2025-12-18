@@ -1,0 +1,4 @@
+index.html:1 Access to script at 'file:///F:/claude_coding/svg-coin-designer/dist/assets/index-Dn-VmReL.js' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: brave, chrome, chrome-extension, chrome-untrusted, data, http, https, isolated-app.
+index.html:8  GET file:///F:/claude_coding/svg-coin-designer/dist/assets/index-Dn-VmReL.js net::ERR_FAILED
+index.html:1 Access to CSS stylesheet at 'file:///F:/claude_coding/svg-coin-designer/dist/assets/index-BdFrAWN2.css' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: brave, chrome, chrome-extension, chrome-untrusted, data, http, https, isolated-app.
+index.html:9  GET file:///F:/claude_coding/svg-coin-designer/dist/assets/index-BdFrAWN2.css net::ERR_FAILED
