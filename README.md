@@ -53,23 +53,26 @@ coin-designer/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd coin-designer
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -87,12 +90,14 @@ The built files will be in the `dist` directory. The build creates a **standalon
 #### Two Ways to Use the Production Build:
 
 **Option 1: Standalone (No Server Required)**
+
 - Simply open `dist/index.html` in any web browser
 - Double-click the file or use File → Open in your browser
 - All JavaScript and CSS are inlined in the HTML file
 - Perfect for offline use or easy distribution
 
 **Option 2: Preview with Local Server**
+
 ```bash
 npm run preview
 ```
@@ -130,6 +135,7 @@ The application automatically processes uploaded images:
 ### Future AI Integration
 
 For production use, consider integrating AI-based services for:
+
 - Advanced background removal (e.g., remove.bg API)
 - Smart cropping (e.g., Cloudinary AI)
 - Portrait enhancement
@@ -174,3 +180,7 @@ Contributions are welcome! Please follow the existing code style and include tes
 ## Contact
 
 For questions or support, please open an issue on GitHub.
+
+## Buy Me A Coffee
+
+I developed this while I currently looking for work. If this app has helped you or someone you know, please consider donating via [Square](https://square.link/u/BgFxtaZI). I appreciate it.
