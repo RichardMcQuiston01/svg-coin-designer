@@ -181,6 +181,8 @@ Contributions are welcome! Please follow the existing code style and include tes
 
 For questions or support, please open an issue on GitHub.
 
-## Buy Me A Coffee
+## Buy Me a Coffee
 
-I developed this while I currently looking for work. If this app has helped you or someone you know, please consider donating via [Square](https://square.link/u/BgFxtaZI). I appreciate it.
+I developed this while I currently looking for work. If this app has helped you or someone you know, please consider donating. I appreciate it.
+
+[![Donate](./donate.svg)](https://square.link/u/BgFxtaZI)
