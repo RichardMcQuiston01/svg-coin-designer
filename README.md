@@ -16,38 +16,12 @@ A TypeScript-based web application for designing custom commemorative coins with
 - **SVG Export**: Generate high-quality SVG files suitable for laser engraving
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 
-## Technology Stack
+## Documentation
 
-- **TypeScript**: Type-safe development
-- **Vite**: Fast build tool and dev server
-- **TailwindCSS**: Utility-first CSS framework
-- **Vanilla JavaScript**: No framework dependencies for runtime
-
-## Project Structure
-
-```
-coin-designer/
-├── src/
-│   ├── components/         # Reusable UI components
-│   │   ├── CoinEditor.ts   # Main editor component
-│   │   ├── CoinPreview.ts  # Live preview component
-│   │   ├── ImageUploader.ts # Image upload component
-│   │   └── TextInput.ts    # Text input component
-│   ├── utils/              # Utility functions
-│   │   ├── imageProcessing.ts # Image manipulation
-│   │   └── svgGenerator.ts    # SVG generation
-│   ├── types/              # TypeScript type definitions
-│   │   └── index.ts
-│   ├── styles/             # CSS styles
-│   │   └── main.css
-│   └── main.ts             # Application entry point
-├── index.html              # HTML entry point
-├── package.json            # Dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
-├── vite.config.ts          # Vite configuration
-├── tailwind.config.js      # TailwindCSS configuration
-└── postcss.config.js       # PostCSS configuration
-```
+- [Quick Start Guide](docs/QUICK_START.md) - Get up and running in 5 minutes
+- [Technology](docs/TECHNOLOGY.md) - Technology stack and project structure
+- [Roadmap](docs/ROADMAP.md) - Planned features and future enhancements
+- [Changelog](CHANGELOG.md) - Notable changes by release
 
 ## Getting Started
 
@@ -127,13 +101,6 @@ The application automatically processes uploaded images:
 - **Contrast Enhancement**: Adds +10 contrast by default for better engraving
 - **Smart Sizing**: Resizes to 800x800px for optimal quality
 
-### Future AI Integration
-
-For production use, consider integrating AI-based services for:
-- Advanced background removal (e.g., remove.bg API)
-- Smart cropping (e.g., Cloudinary AI)
-- Portrait enhancement
-
 ## Code Style
 
 This project follows the **Google TypeScript Style Guide**:
@@ -144,17 +111,6 @@ This project follows the **Google TypeScript Style Guide**:
 - Comprehensive error handling
 - JSDoc comments for all functions
 - Typed variables throughout
-
-## Future Enhancements
-
-- [ ] Template system for pre-designed coins (Christmas, Birthday, etc.)
-- [ ] AI-powered background removal integration
-- [ ] Advanced image editing controls
-- [ ] Custom font selection
-- [ ] Color options for non-laser applications
-- [ ] Save/load designs
-- [ ] Multiple coin size presets
-- [ ] Batch processing
 
 ## Browser Support
 
