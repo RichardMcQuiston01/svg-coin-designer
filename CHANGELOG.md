@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/ROADMAP.md` - planned features and future enhancements.
 - `CHANGELOG.md` - this file.
 - A `Documentation` section in the README linking to the guides, changelog, and licence.
+- `Buy Me a Coffee` section in the README with a `donate.svg` badge linking to Square.
 
 ### Changed
 

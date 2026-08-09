@@ -28,23 +28,26 @@ A TypeScript-based web application for designing custom commemorative coins with
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd coin-designer
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Start the development server:
+
    ```bash
    npm run dev
    ```
@@ -62,12 +65,14 @@ The built files will be in the `dist` directory. The build creates a **standalon
 #### Two Ways to Use the Production Build:
 
 **Option 1: Standalone (No Server Required)**
+
 - Simply open `dist/index.html` in any web browser
 - Double-click the file or use File → Open in your browser
 - All JavaScript and CSS are inlined in the HTML file
 - Perfect for offline use or easy distribution
 
 **Option 2: Preview with Local Server**
+
 ```bash
 npm run preview
 ```
@@ -116,6 +121,12 @@ Licensed under the [MIT License](LICENSE).
 ## Contact
 
 For questions or support, please open an issue on GitHub.
+
+## Buy Me a Coffee
+
+I developed this while I currently looking for work. If this app has helped you or someone you know, please consider donating. I appreciate it.
+
+[![Donate](./donate.svg)](https://square.link/u/BgFxtaZI)
 
 ## Copyright
 
