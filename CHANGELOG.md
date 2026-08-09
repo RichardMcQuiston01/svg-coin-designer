@@ -1,0 +1,73 @@
+# Changelog
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+
+- MIT `LICENSE` file. The README had advertised MIT since the initial commit, but the
+  licence file was empty, which left the project effectively unlicensed.
+- `"license": "MIT"` field in `package.json`, so tooling reports the licence correctly.
+- `docs/TECHNOLOGY.md` - technology stack, project layout, architecture, the image
+  processing pipeline, SVG geometry, and a list of known gaps.
+- `docs/ROADMAP.md` - planned features and future enhancements.
+- `CHANGELOG.md` - this file.
+- A `Documentation` section in the README linking to the guides, changelog, and licence.
+
+### Changed
+
+- Moved `QUICK_START.md` to `docs/QUICK_START.md`.
+- Moved `API_DOCUMENTATION.md` to `docs/API_DOCUMENTATION.md`.
+- Moved the `Technology Stack` and `Project Structure` sections out of the README into
+  `docs/TECHNOLOGY.md`.
+- Moved `Future Enhancements` out of the README into `docs/ROADMAP.md`.
+- Rewrote `docs/QUICK_START.md` and `docs/TECHNOLOGY.md` to match the actual codebase.
+  The documented tree had described `src/components/`, `src/utils/`, `src/types/`, and
+  `src/styles/` subdirectories that do not exist - `src/` is flat - and omitted
+  `NumberInput.ts` and `templates.ts` entirely.
+- Corrected the documented default `portraitScale` from 0.6 to 0.85, and documented the
+  Portrait Size control and its 0.25-0.90 range.
+- Corrected the "Change Font" and "Change Coin Size" instructions, which told readers to
+  edit `SvgConfig` fields (`fontFamily`, `fontSize`, `coinDiameter`, `dpi`) that the SVG
+  generator never reads.
+- Corrected source paths throughout the quick start guide, which referred to
+  `src/utils/svgGenerator.ts` and `src/utils/templates.ts`.
+- Reconciled the `COPYRIGHT` file and the README copyright notice with the MIT licence.
+  Both previously read "All rights reserved", contradicting the stated licence.
+- `.gitignore` now excludes `.claude/settings.local.json`.
+
+### Removed
+
+- `Code Style` section from the README.
+- `Contributing` section from the README.
+- `Keyboard Shortcuts` section from the quick start guide. It documented
+  <kbd>Ctrl</kbd>+<kbd>S</kbd> and <kbd>Ctrl</kbd>+<kbd>E</kbd> as "(Future)" bindings
+  that have never been implemented.
+
+## [1.0.0] - 2025-12-18
+
+### Added
+
+- Initial release.
+- Dual-side coin editor for the obverse (front) and reverse (back).
+- Curved text along the top and bottom of each side, up to 50 characters per field,
+  upper-cased on export.
+- Portrait upload per side, accepting PNG, JPEG, and WebP up to 10 MB.
+- Client-side image processing: scale to an 800x800 canvas, optional threshold-based
+  background removal, brightness and contrast adjustment, grayscale conversion for
+  engraving, and a circular crop.
+- Portrait size control covering 0.25 to 0.90 of the coin radius.
+- Live preview of both sides, updating as the design changes.
+- SVG export producing `commemorative-coin-obverse.svg` and
+  `commemorative-coin-reverse.svg` on a 1000x1000 viewBox.
+- Reset button that clears the design after confirmation.
+- Single-file production build via `vite-plugin-singlefile`, yielding a standalone
+  `dist/index.html` that runs offline over `file://`.
+- Pre-defined coin templates in `src/templates.ts` (not yet wired into the UI).
+
+[Unreleased]: https://github.com/RichardMcQuiston01/svg-coin-designer/compare/929b7d6...dev
+[1.0.0]: https://github.com/RichardMcQuiston01/svg-coin-designer/commit/929b7d6

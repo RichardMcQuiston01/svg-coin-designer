@@ -20,6 +20,7 @@ A TypeScript-based web application for designing custom commemorative coins with
 
 - [Quick Start Guide](docs/QUICK_START.md) - Get up and running in 5 minutes
 - [Technology](docs/TECHNOLOGY.md) - Technology stack and project structure
+- [API Documentation](docs/API_DOCUMENTATION.md) - Module reference and extension points
 - [Roadmap](docs/ROADMAP.md) - Planned features and future enhancements
 - [Changelog](CHANGELOG.md) - Notable changes by release
 
@@ -101,17 +102,6 @@ The application automatically processes uploaded images:
 - **Contrast Enhancement**: Adds +10 contrast by default for better engraving
 - **Smart Sizing**: Resizes to 800x800px for optimal quality
 
-## Code Style
-
-This project follows the **Google TypeScript Style Guide**:
-
-- CamelCase for variables and functions
-- PascalCase for types and interfaces
-- Descriptive variable names
-- Comprehensive error handling
-- JSDoc comments for all functions
-- Typed variables throughout
-
 ## Browser Support
 
 - Chrome 90+
@@ -122,10 +112,6 @@ This project follows the **Google TypeScript Style Guide**:
 ## License
 
 Licensed under the [MIT License](LICENSE).
-
-## Contributing
-
-Contributions are welcome! Please follow the existing code style and include tests for new features.
 
 ## Contact
 
