@@ -69,3 +69,8 @@ vite.config.ts.timestamp-*
 *.exe
 *.sh
 *.bat
+
+# Claude
+.claude/settings.local.json
+
+console_errors.txt

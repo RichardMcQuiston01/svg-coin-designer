@@ -38,7 +38,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `src/utils/svgGenerator.ts` and `src/utils/templates.ts`.
 - Reconciled the `COPYRIGHT` file and the README copyright notice with the MIT licence.
   Both previously read "All rights reserved", contradicting the stated licence.
-- `.gitignore` now excludes `.claude/settings.local.json`.
+- `.gitignore` now excludes `.claude/settings.local.json` and `console_errors.txt`.
+  Both are still tracked, so they remain in the repository until they are removed
+  from the index.
 
 ### Removed
 
