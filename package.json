@@ -2,6 +2,7 @@
   "name": "coin-designer",
   "version": "1.0.0",
   "description": "Commemorative coin designer with laser engraving output",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",

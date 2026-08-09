@@ -165,7 +165,7 @@ This project follows the **Google TypeScript Style Guide**:
 
 ## License
 
-MIT License - See LICENSE file for details
+Licensed under the [MIT License](LICENSE).
 
 ## Contributing
 
@@ -174,3 +174,7 @@ Contributions are welcome! Please follow the existing code style and include tes
 ## Contact
 
 For questions or support, please open an issue on GitHub.
+
+## Copyright
+
+Copyright (c) 2026 Richard McQuiston. Released under the [MIT License](LICENSE).
