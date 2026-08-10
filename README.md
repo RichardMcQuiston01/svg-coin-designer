@@ -88,6 +88,18 @@ npm run typecheck
 Runs the TypeScript compiler without emitting output. `npm run build` performs the same
 check before bundling, so this is just the faster feedback loop while editing.
 
+### Testing
+
+```bash
+npm run test              # run the suite once
+npm run test:watch        # re-run on change
+npm run test:file -- src/svgGenerator.test.ts   # a single file
+npm run test -- -t "upper-cases"                # a single test by name
+```
+
+Tests use [Vitest](https://vitest.dev/) and live beside the code they cover, as
+`src/*.test.ts`.
+
 ## Usage
 
 1. **Design Obverse (Front)**:

@@ -7,25 +7,71 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Montserrat for headings, self-hosted so the standalone file:// build needs no
+ * network. Declared by hand rather than importing @fontsource's stylesheets,
+ * because those also pull in a woff2 fallback that no supported browser needs
+ * and would double the inlined weight. Only the 600 and 700 faces are shipped -
+ * the only weights the headings actually use.
+ */
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('@fontsource/montserrat/files/montserrat-latin-600-normal.woff2')
+    format('woff2');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('@fontsource/montserrat/files/montserrat-latin-700-normal.woff2')
+    format('woff2');
+}
+
 @layer base {
   body {
     @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  /* Headings use Montserrat; body text stays on the system stack. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+
+  /*
+   * Native form controls paint themselves with the browser's own accent colour
+   * (a stock blue), which no amount of utility classes overrides. accent-color
+   * is the only hook for the range thumb and track.
+   */
+  input[type='range'],
+  input[type='checkbox'],
+  input[type='radio'] {
+    @apply accent-brand-primary;
   }
 }
 
 @layer components {
   /* Form input styling */
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all;
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-secondary focus:border-transparent transition-all;
   }
 
   /* Button styling */
   .btn-primary {
-    @apply px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors font-medium;
+    @apply px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover active:bg-brand-primary-active transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed;
   }
 
   .btn-secondary {
-    @apply px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 active:bg-gray-400 transition-colors font-medium;
+    @apply px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 active:bg-gray-400 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-brand-secondary focus:ring-offset-2;
   }
 
   /* Card styling */

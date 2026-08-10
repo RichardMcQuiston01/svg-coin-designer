@@ -26,6 +26,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `typecheck` script (`tsc --noEmit`) for a type check without a full build.
 - A `Type Checking` section in the README documenting the new script.
 
+- Vitest 4 with jsdom, plus `test`, `test:watch`, and `test:file` scripts, and a
+  `Testing` section in the README. The default test environment is `node`; suites that
+  need a DOM opt in per file with a `@vitest-environment jsdom` docblock, which cut the
+  suite from 44.9s to 1.4s.
+- Characterisation tests pinning the current SVG export contract (1000x1000 viewBox,
+  upper-cased curve text, portrait radius scaling, omission of empty elements) and the
+  `TextInput` component. These exist to protect the renderer unification planned for
+  Stage 1; both suites were verified to fail when the behaviour they cover is mutated.
+- `src/vite-env.d.ts` declaring Vite's client types, which resolves the latent `TS2882`
+  error on the `./main.css` side-effect import and types `import.meta.env`.
+- Brand theme tokens in `tailwind.config.js`: `brand.primary` (`#1D4228`),
+  `brand.secondary` (`#5F8560`), hover and active variants, a `heading` font family, and
+  the `slide-in` keyframes that `CoinEditor` already referenced but which were never
+  defined.
+- Montserrat for headings, self-hosted via `@fontsource/montserrat` (weights 600 and 700,
+  latin subset) and base64-inlined by a font-specific `assetsInlineLimit` rule, so the
+  standalone build needs no network. This grows `dist/index.html` from 34 kB to 84 kB.
+
 ### Changed
 
 - Moved `QUICK_START.md` to `docs/QUICK_START.md`.
@@ -49,9 +67,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.gitignore` now excludes `.claude/settings.local.json` and `console_errors.txt`.
 - `.gitignore` no longer excludes `package-lock.json`.
 - The documented lint command in `CLAUDE.md` is now `npm run typecheck`.
+- Buttons, focus rings, and the image-processing indicator now use the brand palette
+  instead of stock Tailwind blues. Tailwind's default `--tw-ring-color` is overridden, so
+  no stock blue remains anywhere in the built stylesheet.
+- Range, checkbox, and radio controls set `accent-color` to the brand primary. Native form
+  controls paint themselves with the browser's own accent colour, which utility classes
+  cannot reach, so the Portrait Size slider had stayed stock blue.
+- Headings (`h1`-`h6`) now render in Montserrat; body text keeps the system stack.
+- The fatal-error screen in `src/main.ts` reuses the `.btn-primary` class rather than
+  repeating inline colour utilities.
+- `docs/TECHNOLOGY.md` records the Vitest, brand-token, and font decisions, and its
+  `Known Gaps` section drops the three items Stage 0 closed while adding the split
+  renderer and the Portrait Size export bug.
 
 ### Removed
 
+- The `file-saver` dependency and its `@types/file-saver` types. Nothing imported either;
+  downloads use `Blob` + `URL.createObjectURL` directly.
 - `.claude/settings.local.json` from version control. It holds per-machine Claude Code
   permission grants that are specific to a single developer's working copy, so committing
   it meant local tool approvals showed up as repository changes. It remains gitignored, so

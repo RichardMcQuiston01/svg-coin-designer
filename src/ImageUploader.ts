@@ -72,7 +72,7 @@ export function createImageUploader(config: ImageUploaderConfig): HTMLDivElement
 
   // Create processing indicator
   const processingIndicator = document.createElement('div');
-  processingIndicator.className = 'hidden mt-2 text-center text-sm text-blue-600';
+  processingIndicator.className = 'hidden mt-2 text-center text-sm text-brand-primary';
   processingIndicator.textContent = 'Processing image...';
 
   // Create error message container
