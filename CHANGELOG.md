@@ -47,13 +47,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reconciled the `COPYRIGHT` file and the README copyright notice with the MIT licence.
   Both previously read "All rights reserved", contradicting the stated licence.
 - `.gitignore` now excludes `.claude/settings.local.json` and `console_errors.txt`.
-  Both are still tracked, so they remain in the repository until they are removed
-  from the index.
+  `.claude/settings.local.json` is still tracked, so it remains in the repository until
+  it is removed from the index.
 - `.gitignore` no longer excludes `package-lock.json`.
 - The documented lint command in `CLAUDE.md` is now `npm run typecheck`.
 
 ### Removed
 
+- `console_errors.txt` from version control. It was a stale browser console dump from an
+  earlier `F:\claude_coding\` checkout, recording CORS failures against a multi-file
+  `dist/assets/` layout that the single-file build no longer produces. It remains
+  gitignored, so local copies are untouched.
 - `lint` script. It ran `eslint src --ext ts,tsx`, but ESLint was never a dependency and
   `--ext` was removed in ESLint 9, so the script could not run. The strict compiler
   options already in `tsconfig.json` cover what a lint preset would catch on a codebase
