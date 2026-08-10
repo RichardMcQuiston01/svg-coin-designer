@@ -79,6 +79,15 @@ npm run preview
 
 This serves the dist folder through a local HTTP server at `http://localhost:4173`.
 
+### Type Checking
+
+```bash
+npm run typecheck
+```
+
+Runs the TypeScript compiler without emitting output. `npm run build` performs the same
+check before bundling, so this is just the faster feedback loop while editing.
+
 ## Usage
 
 1. **Design Obverse (Front)**:

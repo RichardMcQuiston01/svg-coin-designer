@@ -18,6 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `CHANGELOG.md` - this file.
 - A `Documentation` section in the README linking to the guides, changelog, and licence.
 - `Buy Me a Coffee` section in the README with a `donate.svg` badge linking to Square.
+- `package-lock.json` is now tracked, so a clone installs the exact dependency tree.
+  Previously it was ignored, which left nothing pinning the versions: a working copy
+  without `node_modules` fell through to a globally installed TypeScript 7, and the build
+  failed with a `TS2882` error pointing at the `./main.css` import in `src/main.ts` rather
+  than at the missing install.
+- `typecheck` script (`tsc --noEmit`) for a type check without a full build.
+- A `Type Checking` section in the README documenting the new script.
 
 ### Changed
 
@@ -42,9 +49,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `.gitignore` now excludes `.claude/settings.local.json` and `console_errors.txt`.
   Both are still tracked, so they remain in the repository until they are removed
   from the index.
+- `.gitignore` no longer excludes `package-lock.json`.
+- The documented lint command in `CLAUDE.md` is now `npm run typecheck`.
 
 ### Removed
 
+- `lint` script. It ran `eslint src --ext ts,tsx`, but ESLint was never a dependency and
+  `--ext` was removed in ESLint 9, so the script could not run. The strict compiler
+  options already in `tsconfig.json` cover what a lint preset would catch on a codebase
+  this size, so `npm run typecheck` replaces it rather than adding a linter.
 - `Code Style` section from the README.
 - `Contributing` section from the README.
 - `Keyboard Shortcuts` section from the quick start guide. It documented

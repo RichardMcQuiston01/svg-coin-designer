@@ -18,8 +18,8 @@ npm run build
 # Preview production build
 npm run preview
 
-# Lint TypeScript files
-npm run lint
+# Type-check without emitting output
+npm run typecheck
 ```
 
 ## Design & UX Guidelines

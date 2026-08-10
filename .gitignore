@@ -1,6 +1,7 @@
 # Dependencies
+# package-lock.json is deliberately tracked: this is an application, not a
+# library, so the exact dependency tree should be reproducible from a clone.
 node_modules/
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
