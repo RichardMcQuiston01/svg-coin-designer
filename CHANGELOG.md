@@ -47,13 +47,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reconciled the `COPYRIGHT` file and the README copyright notice with the MIT licence.
   Both previously read "All rights reserved", contradicting the stated licence.
 - `.gitignore` now excludes `.claude/settings.local.json` and `console_errors.txt`.
-  `.claude/settings.local.json` is still tracked, so it remains in the repository until
-  it is removed from the index.
 - `.gitignore` no longer excludes `package-lock.json`.
 - The documented lint command in `CLAUDE.md` is now `npm run typecheck`.
 
 ### Removed
 
+- `.claude/settings.local.json` from version control. It holds per-machine Claude Code
+  permission grants that are specific to a single developer's working copy, so committing
+  it meant local tool approvals showed up as repository changes. It remains gitignored, so
+  local copies are untouched.
 - `console_errors.txt` from version control. It was a stale browser console dump from an
   earlier `F:\claude_coding\` checkout, recording CORS failures against a multi-file
   `dist/assets/` layout that the single-file build no longer produces. It remains
