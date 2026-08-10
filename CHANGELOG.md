@@ -102,6 +102,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   <kbd>Ctrl</kbd>+<kbd>S</kbd> and <kbd>Ctrl</kbd>+<kbd>E</kbd> as "(Future)" bindings
   that have never been implemented.
 
+### Fixed
+
+- The Portrait Size slider sat at its minimum while its label read 85%.
+  `createNumberInput()` assigned the slider's value before its `min`, `max`, and `step`,
+  so the browser sanitised `0.85` against the defaults in force at that moment
+  (min 0, max 100, step 1): it snapped to `1`, was then clamped by `max="0.9"`, and
+  settled on `0.25`. The bounds are now assigned first. Note that jsdom implements
+  clamping but not step snapping, so the regression test exercises the clamping path and
+  the snapping case was confirmed in Chrome.
+
 ## [1.0.0] - 2025-12-18
 
 ### Added

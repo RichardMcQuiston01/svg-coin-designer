@@ -54,8 +54,11 @@ export function createNumberInput(config: NumberInputConfig): HTMLDivElement {
   slider.id = config.id;
   slider.name = config.name;
   slider.className = 'flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer';
-  slider.value = config.value.toString();
 
+  // Bounds must be assigned before the value. A range input sanitises its
+  // value against whatever min/max/step are in force at that moment, so
+  // setting the value first sanitises it against the browser defaults
+  // (min 0, max 100, step 1) and the original is lost.
   if (config.min !== undefined) {
     slider.min = config.min.toString();
   }
@@ -65,6 +68,8 @@ export function createNumberInput(config: NumberInputConfig): HTMLDivElement {
   if (config.step !== undefined) {
     slider.step = config.step.toString();
   }
+
+  slider.value = config.value.toString();
 
   // Create value display
   const valueDisplay = document.createElement('div');
