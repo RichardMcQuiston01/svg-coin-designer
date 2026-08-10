@@ -75,3 +75,6 @@ vite.config.ts.timestamp-*
 .claude/settings.local.json
 
 console_errors.txt
+
+# Implementation planning notes are kept out of this repository
+PLAN.md
