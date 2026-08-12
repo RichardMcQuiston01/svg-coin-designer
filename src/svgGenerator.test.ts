@@ -134,6 +134,34 @@ describe('curved text orientation', () => {
     }
   });
 
+  it('keeps bottom text out of the portrait area', async () => {
+    // Glyphs sit on the baseline and extend "up" in the path's local frame.
+    // On the top arc that points outward, into the band between the portrait
+    // ring and the coin edge. On the bottom arc it points inward, so the
+    // bottom baseline has to sit further out for its glyphs to land in the
+    // same band instead of over the portrait.
+    const result = await generateCoinSvgs(
+      createTextOnlyDesign('TOP', 'BOTTOM'),
+      createDefaultSvgConfig(),
+    );
+
+    const [top, bottom] = textArcs(result.obverseSvg!);
+
+    expect(bottom!.radius).toBeGreaterThan(top!.radius);
+  });
+
+  it('keeps both curves inside the coin outline', async () => {
+    const result = await generateCoinSvgs(
+      createTextOnlyDesign('TOP', 'BOTTOM'),
+      createDefaultSvgConfig(),
+    );
+
+    // coinRadius is (1000 / 2) * 0.9 = 450.
+    for (const arc of textArcs(result.obverseSvg!)) {
+      expect(arc.radius).toBeLessThanOrEqual(450);
+    }
+  });
+
   it('renders text large enough to engrave', async () => {
     // 14 units on a 1000 viewBox is 1.4% of the coin diameter. The preview has
     // always shown 18 on a 400 viewBox, which is the same proportion as 45 here.

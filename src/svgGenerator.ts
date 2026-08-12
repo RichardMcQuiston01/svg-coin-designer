@@ -23,6 +23,17 @@ const TEXT_FONT_SIZE = 45;
 const CHARACTER_WIDTH_RATIO = 12 / 14;
 
 /**
+ * Cap height as a fraction of the font size, for Arial-like faces.
+ *
+ * Glyphs sit on the baseline and extend "up" in the path's local frame. On the
+ * top arc that direction points outward, so the text occupies the band between
+ * the portrait ring and the coin edge. On the bottom arc it points inward, so
+ * the baseline is pushed out by this much for the glyphs to land in the same
+ * band rather than across the portrait.
+ */
+const CAP_HEIGHT_RATIO = 0.72;
+
+/**
  * Creates a curved text path for SVG
  * @param text - The text to curve
  * @param radius - Radius of the curve
@@ -35,7 +46,13 @@ function createCurvedTextPath(
   isTopCurve: boolean
 ): string {
   const id = `textPath-${Math.random().toString(36).slice(2, 11)}`;
-  const circumference = 2 * Math.PI * radius;
+
+  // The bottom baseline sits further out so its glyphs, which grow inward,
+  // occupy the same band as the top curve's instead of the portrait.
+  const pathRadius = isTopCurve
+    ? radius
+    : radius + TEXT_FONT_SIZE * CAP_HEIGHT_RATIO;
+  const circumference = 2 * Math.PI * pathRadius;
 
   // Arc length needed for the text, tracking the font size so larger text gets
   // a proportionally longer path to sit on.
@@ -61,12 +78,12 @@ function createCurvedTextPath(
   const startRad = (startDeg * Math.PI) / 180;
   const endRad = (endDeg * Math.PI) / 180;
 
-  const x1 = Math.cos(startRad) * radius;
-  const y1 = Math.sin(startRad) * radius;
-  const x2 = Math.cos(endRad) * radius;
-  const y2 = Math.sin(endRad) * radius;
+  const x1 = Math.cos(startRad) * pathRadius;
+  const y1 = Math.sin(startRad) * pathRadius;
+  const x2 = Math.cos(endRad) * pathRadius;
+  const y2 = Math.sin(endRad) * pathRadius;
 
-  const pathD = `M ${x1} ${y1} A ${radius} ${radius} 0 0 ${sweepFlag} ${x2} ${y2}`;
+  const pathD = `M ${x1} ${y1} A ${pathRadius} ${pathRadius} 0 0 ${sweepFlag} ${x2} ${y2}`;
 
   return `
     <defs>
