@@ -56,6 +56,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The README's donation link and its `donate.svg` QR code now point at Stripe rather
+  than Square. The QR code is regenerated for the new URL and rendered at 220 px rather
+  than 1155, so it no longer takes up most of the page.
 - Moved `QUICK_START.md` to `docs/QUICK_START.md`.
 - Moved `API_DOCUMENTATION.md` to `docs/API_DOCUMENTATION.md`.
 - Moved the `Technology Stack` and `Project Structure` sections out of the README into
