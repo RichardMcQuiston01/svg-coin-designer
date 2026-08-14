@@ -44,6 +44,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   latin subset) and base64-inlined by a font-specific `assetsInlineLimit` rule, so the
   standalone build needs no network. This grows `dist/index.html` from 34 kB to 84 kB.
 
+- `src/DonateWidget.ts` - a dismissible floating card in the bottom-right corner of the
+  app, with a short appeal, a `Donate via Stripe` link, and a QR code for the same page.
+  The QR code is a pre-generated SVG inlined from `src/assets/donate-qr.svg`, so it stays
+  crisp at any size and the standalone `file://` build needs no network to show it. The
+  dismissal is stored in `localStorage` under `coinDesigner.donateDismissed`; storage
+  failures (Safari private mode, blocked storage) fall back to showing the card. The QR
+  code is hidden below 400 px wide, where the card has no room for it and the phone
+  holding it cannot scan its own display anyway.
+- An `xs` (400 px) Tailwind breakpoint, below the smallest stock one.
+
 ### Changed
 
 - Moved `QUICK_START.md` to `docs/QUICK_START.md`.
@@ -102,8 +112,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   <kbd>Ctrl</kbd>+<kbd>S</kbd> and <kbd>Ctrl</kbd>+<kbd>E</kbd> as "(Future)" bindings
   that have never been implemented.
 
+- The preview and the export now share one curved-text renderer, `src/curvedText.ts`.
+  The preview had laid text out character by character across a fixed 120-degree arc,
+  so its spacing bore no relation to the text and neither did it match the exported
+  file; both now set text on an arc sized to the text.
+
 ### Fixed
 
+- Curved text in the preview no longer spreads short lines across the whole rim or runs
+  long ones into the coin edge, and the bottom curve no longer sits a cap height low
+  across the portrait ring. Its baseline now sits a cap height further out than the top
+  curve's, because bottom glyphs grow inward, which puts both curves in the same band.
+- Curved text is no longer clipped where a run of wide glyphs outgrows the estimated
+  text width: the arc is padded past the estimate, and text that would otherwise pass
+  170 degrees and collide with the curve opposite is scaled down to fit.
+- An ampersand in curve text no longer produces a malformed SVG; XML metacharacters are
+  escaped.
+- Preview clip-path ids are drawn from a counter rather than `Date.now()`, which repeats
+  across previews rendered in the same millisecond and can differ between the two places
+  the id is read, leaving a portrait unclipped.
 - The Portrait Size slider sat at its minimum while its label read 85%.
   `createNumberInput()` assigned the slider's value before its `min`, `max`, and `step`,
   so the browser sanitised `0.85` against the defaults in force at that moment
