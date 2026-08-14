@@ -40,6 +40,8 @@ svg-coin-designer/
 │   ├── ROADMAP.md            # Planned features
 │   └── TECHNOLOGY.md         # This file
 ├── src/
+│   ├── assets/
+│   │   └── donate-qr.svg     # Pre-generated QR code for the donation page
 │   ├── main.ts               # Entry point; boots the editor, handles fatal errors
 │   ├── main.css              # Tailwind layers, @font-face, .card/.btn-primary classes
 │   ├── index.ts              # Shared TypeScript type definitions (no runtime code)
@@ -47,6 +49,8 @@ svg-coin-designer/
 │   ├── *.test.ts             # Vitest suites, colocated with the code they cover
 │   ├── CoinEditor.ts         # Orchestrator: owns design state, builds the UI, exports
 │   ├── CoinPreview.ts        # Live preview rendering for each coin side
+│   ├── DonateWidget.ts       # Dismissible floating donation card
+│   ├── curvedText.ts         # Shared curved-text renderer for preview and export
 │   ├── ImageUploader.ts      # File input, validation, hand-off to processing
 │   ├── TextInput.ts          # Labelled text input
 │   ├── NumberInput.ts        # Numeric input used for the portrait size control
@@ -139,10 +143,25 @@ Defaults live in `createDefaultProcessingOptions()`.
 | Text baseline | `coinRadius * 0.85` = 382.5 |
 | Portrait | `coinRadius * portraitScale` (default 0.85) |
 
-Curved text is produced by computing the arc length needed for the string, centring it
-on the given start angle, emitting an SVG arc path, and rendering the text with
-`<textPath startOffset="50%" text-anchor="middle">`. Text is upper-cased on output.
-The portrait is masked with a circular `<clipPath>`.
+Curved text comes from `src/curvedText.ts`, which the live preview uses as well, so the
+screen and the exported file agree. For each curve it computes the arc length the string
+needs, centres that arc on the top or bottom of the coin, emits an SVG arc path, and sets
+the text on it with `<textPath startOffset="50%" text-anchor="middle">`. Text is
+upper-cased on output. The portrait is masked with a circular `<clipPath>`.
+
+Three details are easy to get wrong here:
+
+- **Direction.** Glyphs follow the direction their path travels, so both arcs are drawn
+  left to right. Reversing the bottom arc turns every glyph upside down.
+- **Sweep.** Any two endpoints admit two arcs of equal radius, on mirrored circles. Only
+  one is the coin's own circle; the other bows in toward the centre.
+- **Baseline radius.** Glyphs grow "up" in the path's local frame, which points outward
+  on the top arc and inward on the bottom one. The bottom baseline therefore sits a cap
+  height further out, so both curves occupy the same band.
+
+Font size is `0.045 x` the viewBox (45 units on the export, 18 on the preview's 400-unit
+viewBox). Text long enough to span more than 170 degrees is scaled down, so the two
+curves cannot meet at the sides of the coin.
 
 ## Build Output
 
@@ -158,11 +177,9 @@ Accurate as of this revision - see [ROADMAP.md](ROADMAP.md) for planned work.
 - `src/templates.ts` defines four templates but nothing imports it; there is no
   template picker in the UI.
 - Of the `SvgConfig` fields, only `portraitScale` affects output. `coinDiameter`,
-  `dpi`, `fontFamily`, and `fontSize` are currently unused - font family and size are
-  hard-coded inside `createCurvedTextPath()`.
-- No `localStorage` persistence; designs are lost on reload.
-- The live preview and the SVG export use two different curved-text implementations,
-  which disagree on algorithm, coin radius, font size, and fill colour. The preview does
-  not show what gets exported.
+  `dpi`, `fontFamily`, and `fontSize` are currently unused - font family and size come
+  from `src/curvedText.ts` instead.
+- No `localStorage` persistence for the design; only the donation card's dismissal is
+  stored, so designs are still lost on reload.
 - The Portrait Size control updates both previews but has no effect on the exported SVG:
   `createActionButtons()` captures `portraitScale` by value when the UI is built.

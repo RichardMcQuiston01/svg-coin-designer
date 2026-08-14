@@ -6,6 +6,12 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        // Narrower than Tailwind's smallest stock breakpoint, for details that
+        // only have to drop out on the tightest phones - the donate card's QR
+        // code, for one.
+        xs: '400px',
+      },
       colors: {
         // Company palette. White text on `primary` measures 11.28:1, comfortably
         // past WCAG AA. White text on `secondary` is only 4.19:1, so secondary is
