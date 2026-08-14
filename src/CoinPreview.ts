@@ -3,7 +3,11 @@
  * Displays a live preview of the coin design
  */
 
+import {createCurvedText, TEXT_FONT_SIZE_RATIO} from './curvedText';
 import type {CoinSide} from './index';
+
+/** Source of unique clip-path ids across every preview on the page */
+let nextClipId = 0;
 
 /**
  * Configuration for CoinPreview component
@@ -65,6 +69,7 @@ function updatePreview(
   const coinRadius = svgSize / 2 * 0.95;
   const textRadius = coinRadius * 0.85;
   const portraitRadius = coinRadius * portraitScale;
+  const fontSize = svgSize * TEXT_FONT_SIZE_RATIO;
 
   // Create SVG
   let svg = `
@@ -103,16 +108,20 @@ function updatePreview(
 
   // Add portrait if available
   if (coinSide.coinPortrait) {
+    // Ids are document-wide, so the two previews need distinct ones. A counter
+    // is used rather than a timestamp, which repeats across previews rendered
+    // in the same millisecond and can differ between the two places it is read.
+    const clipId = `portraitClip-${(nextClipId += 1)}`;
     svg += `
       <defs>
-        <clipPath id="portraitClip-${Date.now()}">
+        <clipPath id="${clipId}">
           <circle cx="${centerX}" cy="${centerY}" r="${portraitRadius}"/>
         </clipPath>
       </defs>
-      <image x="${centerX - portraitRadius}" y="${centerY - portraitRadius}" 
-             width="${portraitRadius * 2}" height="${portraitRadius * 2}" 
-             href="${coinSide.coinPortrait}" 
-             clip-path="url(#portraitClip-${Date.now()})" 
+      <image x="${centerX - portraitRadius}" y="${centerY - portraitRadius}"
+             width="${portraitRadius * 2}" height="${portraitRadius * 2}"
+             href="${coinSide.coinPortrait}"
+             clip-path="url(#${clipId})"
              preserveAspectRatio="xMidYMid slice"
              opacity="0.9"/>
     `;
@@ -131,26 +140,28 @@ function updatePreview(
 
   // Add top curved text
   if (coinSide.topCurveText.trim()) {
-    svg += createCurvedText(
-      coinSide.topCurveText.toUpperCase(),
+    svg += createCurvedText({
+      text: coinSide.topCurveText.toUpperCase(),
       centerX,
       centerY,
-      textRadius,
-      -90,
-      true
-    );
+      radius: textRadius,
+      fontSize,
+      isTopCurve: true,
+      fill: '#333',
+    });
   }
 
   // Add bottom curved text
   if (coinSide.bottomCurveText.trim()) {
-    svg += createCurvedText(
-      coinSide.bottomCurveText.toUpperCase(),
+    svg += createCurvedText({
+      text: coinSide.bottomCurveText.toUpperCase(),
       centerX,
       centerY,
-      textRadius,
-      90,
-      false
-    );
+      radius: textRadius,
+      fontSize,
+      isTopCurve: false,
+      fill: '#333',
+    });
   }
 
   svg += `
@@ -158,57 +169,6 @@ function updatePreview(
   `;
 
   previewElement.innerHTML = svg;
-}
-
-/**
- * Creates curved text for SVG preview
- * @param text - Text to display
- * @param centerX - Center X coordinate
- * @param centerY - Center Y coordinate
- * @param radius - Radius of text curve
- * @param startAngle - Starting angle in degrees
- * @param isTopCurve - Whether this is top or bottom curve
- * @returns SVG text element string
- */
-function createCurvedText(
-  text: string,
-  centerX: number,
-  centerY: number,
-  radius: number,
-  startAngle: number,
-  isTopCurve: boolean
-): string {
-  // Calculate character positioning
-  const chars = text.split('');
-  const totalAngle = 120; // Total arc angle for text
-
-  // For bottom curve, reverse direction (go counter-clockwise)
-  const angleStep = (totalAngle / (chars.length - 1 || 1)) * (isTopCurve ? 1 : -1);
-  const startOffset = startAngle - (totalAngle / 2) * (isTopCurve ? 1 : -1);
-
-  let textElements = '';
-
-  chars.forEach((char, index) => {
-    const angle = (startOffset + (angleStep * index)) * (Math.PI / 180);
-    const x = centerX + Math.cos(angle) * radius;
-    const y = centerY + Math.sin(angle) * radius;
-
-    // Calculate rotation for each character
-    // Bottom curve needs 180 degree offset to be readable from same orientation as top
-    const baseRotation = startOffset + (angleStep * index) + 90;
-    const rotation = isTopCurve ? baseRotation : baseRotation + 180;
-
-    textElements += `
-      <text x="${x}" y="${y}"
-            font-family="Arial, sans-serif" font-size="18" font-weight="bold"
-            fill="#333" text-anchor="middle"
-            transform="rotate(${rotation} ${x} ${y})">
-        ${char}
-      </text>
-    `;
-  });
-
-  return textElements;
 }
 
 /**

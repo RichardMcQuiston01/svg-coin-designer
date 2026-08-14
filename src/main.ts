@@ -5,6 +5,7 @@
 
 import './main.css';
 import {createCoinEditor} from './CoinEditor';
+import {mountDonateWidget} from './DonateWidget';
 
 /**
  * Initialize the application when DOM is ready
@@ -20,6 +21,10 @@ function initializeApp(): void {
 
     // Initialize the coin editor
     const coinDesign = createCoinEditor('app');
+
+    // Floating donation card; sits outside the editor so it stays put as the
+    // page scrolls, and stays hidden once dismissed.
+    mountDonateWidget();
 
     console.log('Commemorative Coin Designer initialized successfully');
     console.log('Current design:', coinDesign);
