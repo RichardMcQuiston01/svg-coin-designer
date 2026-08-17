@@ -11,7 +11,7 @@ A TypeScript-based web application for designing custom commemorative coins with
   - Grayscale conversion for laser engraving
   - Circular cropping
   - Contrast and brightness adjustment
-  - Background removal (basic implementation)
+  - Background removal (basic implementation, off by default)
 - **Live Preview**: Real-time preview of coin designs as you edit
 - **SVG Export**: Generate high-quality SVG files suitable for laser engraving
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
@@ -21,7 +21,6 @@ A TypeScript-based web application for designing custom commemorative coins with
 - [Quick Start Guide](docs/QUICK_START.md) - Get up and running in 5 minutes
 - [Technology](docs/TECHNOLOGY.md) - Technology stack and project structure
 - [API Documentation](docs/API_DOCUMENTATION.md) - Module reference and extension points
-- [Roadmap](docs/ROADMAP.md) - Planned features and future enhancements
 - [Changelog](CHANGELOG.md) - Notable changes by release
 
 ## Getting Started
@@ -37,7 +36,7 @@ A TypeScript-based web application for designing custom commemorative coins with
 
    ```bash
    git clone <repository-url>
-   cd coin-designer
+   cd svg-coin-designer
    ```
 
 2. Install dependencies:
@@ -54,30 +53,18 @@ A TypeScript-based web application for designing custom commemorative coins with
 
 4. Open your browser to `http://localhost:3000`
 
+From there, the [Quick Start Guide](docs/QUICK_START.md) walks through designing a coin,
+picking image sources, and what the app does to each upload before it reaches the preview.
+
 ### Building for Production
 
 ```bash
 npm run build
 ```
 
-The built files will be in the `dist` directory. The build creates a **standalone, self-contained HTML file** (`dist/index.html`) that can be opened directly in any browser without requiring a server.
-
-#### Two Ways to Use the Production Build:
-
-**Option 1: Standalone (No Server Required)**
-
-- Simply open `dist/index.html` in any web browser
-- Double-click the file or use File → Open in your browser
-- All JavaScript and CSS are inlined in the HTML file
-- Perfect for offline use or easy distribution
-
-**Option 2: Preview with Local Server**
-
-```bash
-npm run preview
-```
-
-This serves the dist folder through a local HTTP server at `http://localhost:4173`.
+The build produces a single self-contained `dist/index.html` with all JavaScript and CSS
+inlined, so it can be opened directly in a browser without a server. `npm run preview`
+serves it at `http://localhost:4173` if you would rather test over HTTP.
 
 ### Type Checking
 
@@ -99,34 +86,6 @@ npm run test -- -t "upper-cases"                # a single test by name
 
 Tests use [Vitest](https://vitest.dev/) and live beside the code they cover, as
 `src/*.test.ts`.
-
-## Usage
-
-1. **Design Obverse (Front)**:
-   - Enter text for the top curve
-   - Enter text for the bottom curve
-   - Upload a portrait image
-
-2. **Design Reverse (Back)**:
-   - Enter text for the top curve (e.g., "MERRY CHRISTMAS")
-   - Enter text for the bottom curve (e.g., "2025")
-   - Upload a portrait image (e.g., Santa Claus)
-
-3. **Preview**:
-   - View live previews of both sides in the preview section
-
-4. **Export**:
-   - Click "Export SVG Files" to download both coin side SVGs
-   - Files will be named `commemorative-coin-obverse.svg` and `commemorative-coin-reverse.svg`
-
-## Image Processing
-
-The application automatically processes uploaded images:
-
-- **Grayscale Conversion**: Converts to grayscale optimized for laser engraving
-- **Circular Crop**: Crops image to fit circular coin format
-- **Contrast Enhancement**: Adds +10 contrast by default for better engraving
-- **Smart Sizing**: Resizes to 800x800px for optimal quality
 
 ## Browser Support
 
