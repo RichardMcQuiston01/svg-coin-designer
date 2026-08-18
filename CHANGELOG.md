@@ -93,10 +93,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `Known Gaps` section drops the three items Stage 0 closed while adding the split
   renderer and the Portrait Size export bug.
 - Trimmed the README to a hub. Its `Usage` and `Image Processing` sections and the
-  expanded `Two Ways to Use the Production Build` block restated `docs/QUICK_START.md`
-  at about half the file's length, and the two copies had already drifted apart on three
-  points of fact. The README now covers install, build, typecheck, and test, and links to
-  the Quick Start Guide for the design walkthrough and the upload pipeline.
+  expanded `Two Ways to Use the Production Build` block restated `docs/QUICK_START.md` -
+  about 81 of the README's 155 lines - and the two copies had already drifted apart on
+  three points of fact. The README now covers install, build, typecheck, and test (115
+  lines), and links to the Quick Start Guide for the design walkthrough and the upload
+  pipeline.
 - Restored the standard wording of the README's `Buy Me a Coffee` section and moved it
   below `Copyright` as the final section. The body copy now matches the floating donate
   card in `src/DonateWidget.ts`, which had been showing visitors a different ask.
