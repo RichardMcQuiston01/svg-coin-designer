@@ -92,9 +92,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `docs/TECHNOLOGY.md` records the Vitest, brand-token, and font decisions, and its
   `Known Gaps` section drops the three items Stage 0 closed while adding the split
   renderer and the Portrait Size export bug.
+- Trimmed the README to a hub. Its `Usage` and `Image Processing` sections and the
+  expanded `Two Ways to Use the Production Build` block restated `docs/QUICK_START.md` -
+  about 81 of the README's 155 lines - and the two copies had already drifted apart on
+  three points of fact. The README now covers install, build, typecheck, and test (115
+  lines), and links to the Quick Start Guide for the design walkthrough and the upload
+  pipeline.
+- Restored the standard wording of the README's `Buy Me a Coffee` section and moved it
+  below `Copyright` as the final section. The body copy now matches the floating donate
+  card in `src/DonateWidget.ts`, which had been showing visitors a different ask.
 
 ### Removed
 
+- The `Roadmap` entry from the README's `Documentation` list. `docs/ROADMAP.md` is
+  unchanged and still linked from `docs/QUICK_START.md` and `docs/TECHNOLOGY.md`.
 - The `file-saver` dependency and its `@types/file-saver` types. Nothing imported either;
   downloads use `Blob` + `URL.createObjectURL` directly.
 - `.claude/settings.local.json` from version control. It holds per-machine Claude Code
@@ -122,6 +133,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The README's clone instructions ran `cd coin-designer`, which fails: the repository
+  clones to `svg-coin-designer`. The `coin-designer` name comes from `package.json`.
+- The README's feature list advertised background removal without noting that
+  `createDefaultProcessingOptions()` sets `removeBackground: false`, so it is off unless
+  a caller opts in.
 - Curved text in the preview no longer spreads short lines across the whole rim or runs
   long ones into the coin edge, and the bottom curve no longer sits a cap height low
   across the portrait ring. Its baseline now sits a cap height further out than the top
