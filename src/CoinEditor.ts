@@ -170,7 +170,8 @@ function createHeader(
   onDisplaySettingsChange: () => void
 ): HTMLElement {
   const header = document.createElement('header');
-  header.className = 'shrink-0 flex items-start justify-between gap-4';
+  header.className =
+    'shrink-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3';
 
   const titleGroup = document.createElement('div');
 
@@ -186,7 +187,7 @@ function createHeader(
   titleGroup.appendChild(subtitle);
 
   const actionGroup = document.createElement('div');
-  actionGroup.className = 'shrink-0 flex items-center gap-2';
+  actionGroup.className = 'shrink-0 flex items-center flex-wrap gap-2';
 
   const settingsButton = createSettingsPanel(displaySettings, onDisplaySettingsChange);
   const actionButtons = createActionButtons(coinDesign, displaySettings);
