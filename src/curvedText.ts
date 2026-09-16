@@ -221,7 +221,7 @@ export function createCurvedText(options: CurvedTextOptions): string {
         <path id="${id}" d="${pathD}" fill="none"/>
       </defs>
       <text font-family="${fontFamily}" font-size="${round(fontSize)}" font-weight="bold" fill="${fill}">
-        <textPath href="#${id}" startOffset="50%" text-anchor="middle">${escapeXml(text)}</textPath>
+        <textPath href="#${id}" xlink:href="#${id}" startOffset="50%" text-anchor="middle">${escapeXml(text)}</textPath>
       </text>
     </g>
   `;
