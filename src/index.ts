@@ -75,6 +75,34 @@ export interface SvgConfig {
   fontSize: number;
   /** Portrait diameter as percentage of coin */
   portraitScale: number;
+  /** Curved text radius as a fraction of the coin radius */
+  textRadiusScale: number;
+}
+
+/**
+ * User-adjustable display settings shared by the live preview and SVG export -
+ * everything the "Display Settings" panel controls.
+ */
+export interface CoinDisplaySettings {
+  /** Portrait diameter as a fraction of the coin radius */
+  portraitScale: number;
+  /** Font family for the curved text */
+  fontFamily: string;
+  /** Curved text radius as a fraction of the coin radius - controls the gap
+   * between the dashed portrait guide and the curved text */
+  textRadiusScale: number;
+}
+
+/**
+ * One selectable entry in the font picker
+ */
+export interface FontOption {
+  /** Stable identifier for the option */
+  id: string;
+  /** Display name shown in the picker */
+  label: string;
+  /** CSS font-family value applied to the curved text */
+  value: string;
 }
 
 /**
