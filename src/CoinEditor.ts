@@ -15,6 +15,8 @@ import {
 } from './svgGenerator';
 import type {CoinDesign, CoinSide} from './index';
 
+type CoinSideKey = 'obverse' | 'reverse';
+
 /**
  * Creates the initial empty coin design
  * @returns Empty coin design object
@@ -49,133 +51,198 @@ export function createCoinEditor(containerId: string): CoinDesign {
 
   // Initialize coin design state
   const coinDesign = createEmptyCoinDesign();
-  
+
   // Initialize portrait scale state (default 85%)
   let portraitScale = 0.85;
 
-  // Clear container
+  // Clear container. On desktop (lg+) the page itself does not scroll - the
+  // layout is sized to fit a typical viewport, with only the (variable-length)
+  // side editor panel scrolling internally if its content runs long. Below
+  // that breakpoint the two-column layout stacks, so the page falls back to
+  // normal scrolling rather than clipping content that no longer fits.
   container.innerHTML = '';
-  container.className = 'container mx-auto px-4 py-8 max-w-7xl';
+  container.className =
+    'flex flex-col lg:h-screen lg:overflow-hidden px-4 py-3 max-w-7xl mx-auto w-full';
 
-  // Create header
-  const header = createHeader();
+  // Create header (title + Export/Reset actions, top-right)
+  const header = createHeader(coinDesign, () => portraitScale);
   container.appendChild(header);
 
-  // Create main layout
+  // Main layout: side editor tabs on the left, live previews on the right
   const mainLayout = document.createElement('div');
-  mainLayout.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8';
+  mainLayout.className =
+    'flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-6 mt-3';
 
-  // Create obverse (front) side editor
-  const obverseEditor = createSideEditor(
-    'obverse',
-    'Obverse (Front)',
-    coinDesign.obverse,
-    (side: CoinSide) => {
-      coinDesign.obverse = side;
-      updateCoinPreview('obverse-preview', side, portraitScale);
-    }
-  );
-
-  // Create reverse (back) side editor
-  const reverseEditor = createSideEditor(
-    'reverse',
-    'Reverse (Back)',
-    coinDesign.reverse,
-    (side: CoinSide) => {
-      coinDesign.reverse = side;
-      updateCoinPreview('reverse-preview', side, portraitScale);
-    }
-  );
-
-  // Add editors to layout
-  mainLayout.appendChild(obverseEditor);
-  mainLayout.appendChild(reverseEditor);
-  container.appendChild(mainLayout);
-
-
-  // Create portrait size control section
-  const portraitSizeSection = document.createElement('section');
-  portraitSizeSection.className = 'mt-8 max-w-2xl mx-auto';
-  
-  const portraitSizeCard = document.createElement('div');
-  portraitSizeCard.className = 'card';
-  
-  const portraitSizeControl = createNumberInput({
-    id: 'portraitScale',
-    name: 'portraitScale',
-    label: 'Portrait Size',
-    value: portraitScale,
-    min: 0.25,
-    max: 0.90,
-    step: 0.05,
-    unit: '%',
-    helperText: 'Adjust the portrait diameter as a percentage of the coin radius',
-    onChange: (value: number) => {
-      portraitScale = value;
-      // Update both previews
-      updateCoinPreview('obverse-preview', coinDesign.obverse, portraitScale);
-      updateCoinPreview('reverse-preview', coinDesign.reverse, portraitScale);
-    },
+  const editorColumn = createEditorColumn(coinDesign, portraitScale, (value) => {
+    portraitScale = value;
+    updateCoinPreview('obverse-preview', coinDesign.obverse, portraitScale);
+    updateCoinPreview('reverse-preview', coinDesign.reverse, portraitScale);
   });
-  
-  portraitSizeCard.appendChild(portraitSizeControl);
-  portraitSizeSection.appendChild(portraitSizeCard);
-  container.appendChild(portraitSizeSection);
-  // Create preview section
-  const previewSection = createPreviewSection(coinDesign, portraitScale);
-  container.appendChild(previewSection);
+  mainLayout.appendChild(editorColumn);
 
-  // Create action buttons
-  const actionButtons = createActionButtons(coinDesign, () => portraitScale);
-  container.appendChild(actionButtons);
+  const previewColumn = createPreviewColumn(coinDesign, portraitScale);
+  mainLayout.appendChild(previewColumn);
+
+  container.appendChild(mainLayout);
 
   return coinDesign;
 }
 
 /**
- * Creates the page header
+ * Creates the page header with title and the Export/Reset actions
+ * anchored to the top-right corner
+ * @param coinDesign - Current coin design
+ * @param getPortraitScale - Getter for the current portrait scale
  * @returns Header element
  */
-function createHeader(): HTMLElement {
+function createHeader(
+  coinDesign: CoinDesign,
+  getPortraitScale: () => number
+): HTMLElement {
   const header = document.createElement('header');
-  header.className = 'text-center mb-8';
+  header.className = 'shrink-0 flex items-start justify-between gap-4';
+
+  const titleGroup = document.createElement('div');
 
   const title = document.createElement('h1');
-  title.className = 'text-4xl font-bold text-gray-900 mb-2';
+  title.className = 'text-2xl sm:text-3xl font-bold text-gray-900';
   title.textContent = 'Commemorative Coin Designer';
 
   const subtitle = document.createElement('p');
-  subtitle.className = 'text-gray-600 text-lg';
+  subtitle.className = 'text-gray-600 text-sm mt-1';
   subtitle.textContent = 'Design custom coins with laser-engravable SVG output';
 
-  header.appendChild(title);
-  header.appendChild(subtitle);
+  titleGroup.appendChild(title);
+  titleGroup.appendChild(subtitle);
+
+  const actionButtons = createActionButtons(coinDesign, getPortraitScale);
+
+  header.appendChild(titleGroup);
+  header.appendChild(actionButtons);
 
   return header;
 }
 
 /**
+ * Creates the left-hand editor column: a tabbed switcher between the
+ * obverse and reverse side editors, plus the shared portrait size control
+ * @param coinDesign - Current coin design
+ * @param initialPortraitScale - Starting portrait scale
+ * @param onPortraitScaleChange - Called when the portrait size control changes
+ * @returns Editor column element
+ */
+function createEditorColumn(
+  coinDesign: CoinDesign,
+  initialPortraitScale: number,
+  onPortraitScaleChange: (value: number) => void
+): HTMLElement {
+  const column = document.createElement('div');
+  column.className = 'flex flex-col min-h-0';
+
+  const sidePanels: Record<CoinSideKey, HTMLElement> = {
+    obverse: createSideEditor('obverse', coinDesign.obverse, (side) => {
+      coinDesign.obverse = side;
+      updateCoinPreview('obverse-preview', side, initialPortraitScale);
+    }),
+    reverse: createSideEditor('reverse', coinDesign.reverse, (side) => {
+      coinDesign.reverse = side;
+      updateCoinPreview('reverse-preview', side, initialPortraitScale);
+    }),
+  };
+  sidePanels.reverse.classList.add('hidden');
+
+  const tabBar = createTabBar(
+    [
+      {key: 'obverse', label: 'Obverse (Front)'},
+      {key: 'reverse', label: 'Reverse (Back)'},
+    ],
+    (key) => {
+      (Object.keys(sidePanels) as CoinSideKey[]).forEach((sideKey) => {
+        sidePanels[sideKey].classList.toggle('hidden', sideKey !== key);
+      });
+    }
+  );
+  column.appendChild(tabBar);
+
+  const panelWrapper = document.createElement('div');
+  panelWrapper.className =
+    'flex-1 min-h-0 overflow-y-auto bg-white rounded-b-xl rounded-tr-xl shadow-md p-4';
+  panelWrapper.appendChild(sidePanels.obverse);
+  panelWrapper.appendChild(sidePanels.reverse);
+  column.appendChild(panelWrapper);
+
+  const portraitSizeCard = document.createElement('div');
+  portraitSizeCard.className = 'card mt-3 shrink-0 py-3';
+
+  const portraitSizeControl = createNumberInput({
+    id: 'portraitScale',
+    name: 'portraitScale',
+    label: 'Portrait Size',
+    value: initialPortraitScale,
+    min: 0.25,
+    max: 0.9,
+    step: 0.05,
+    unit: '%',
+    helperText: 'Adjust the portrait diameter as a percentage of the coin radius',
+    onChange: onPortraitScaleChange,
+  });
+  portraitSizeCard.appendChild(portraitSizeControl);
+  column.appendChild(portraitSizeCard);
+
+  return column;
+}
+
+/**
+ * Creates a tab bar that toggles between the given tabs
+ * @param tabs - Tab key/label pairs, in display order
+ * @param onSelect - Called with the selected tab's key
+ * @returns Tab bar element
+ */
+function createTabBar(
+  tabs: Array<{key: CoinSideKey; label: string}>,
+  onSelect: (key: CoinSideKey) => void
+): HTMLElement {
+  const tabBar = document.createElement('div');
+  tabBar.className = 'shrink-0 flex gap-1 border-b border-gray-200';
+  tabBar.setAttribute('role', 'tablist');
+
+  const buttons = tabs.map(({label}) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.setAttribute('role', 'tab');
+    button.className = 'tab-button';
+    return button;
+  });
+
+  tabs.forEach(({key}, index) => {
+    const button = buttons[index]!;
+    button.addEventListener('click', () => {
+      buttons.forEach((btn) => btn.classList.remove('tab-button-active'));
+      button.classList.add('tab-button-active');
+      onSelect(key);
+    });
+    tabBar.appendChild(button);
+  });
+
+  buttons[0]?.classList.add('tab-button-active');
+
+  return tabBar;
+}
+
+/**
  * Creates an editor for one side of the coin
  * @param prefix - Prefix for element IDs (obverse/reverse)
- * @param title - Title for this side
  * @param coinSide - Initial coin side data
  * @param onUpdate - Update callback
  * @returns Editor container element
  */
 function createSideEditor(
   prefix: string,
-  title: string,
   coinSide: CoinSide,
   onUpdate: (side: CoinSide) => void
 ): HTMLElement {
   const container = document.createElement('div');
-  container.className = 'card';
-
-  // Section title
-  const sectionTitle = document.createElement('h2');
-  sectionTitle.className = 'text-2xl font-semibold text-gray-800 mb-6';
-  sectionTitle.textContent = title;
-  container.appendChild(sectionTitle);
 
   // Top curve text input
   const topTextInput = createTextInput({
@@ -230,21 +297,25 @@ function createSideEditor(
 }
 
 /**
- * Creates the preview section
+ * Creates the right-hand live preview column
  * @param coinDesign - Current coin design
- * @returns Preview section element
+ * @param portraitScale - Current portrait scale
+ * @returns Preview column element
  */
-function createPreviewSection(coinDesign: CoinDesign, portraitScale: number): HTMLElement {
-  const section = document.createElement('section');
-  section.className = 'mt-12';
+function createPreviewColumn(
+  coinDesign: CoinDesign,
+  portraitScale: number
+): HTMLElement {
+  const column = document.createElement('div');
+  column.className = 'flex flex-col min-h-0';
 
   const title = document.createElement('h2');
-  title.className = 'text-2xl font-semibold text-gray-800 mb-6 text-center';
+  title.className = 'shrink-0 text-lg font-semibold text-gray-800 mb-3 text-center';
   title.textContent = 'Live Preview';
-  section.appendChild(title);
+  column.appendChild(title);
 
   const previewGrid = document.createElement('div');
-  previewGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-8';
+  previewGrid.className = 'flex-1 min-h-0 grid grid-cols-2 gap-4 place-items-center';
 
   // Obverse preview
   const obversePreview = createCoinPreview({
@@ -253,6 +324,7 @@ function createPreviewSection(coinDesign: CoinDesign, portraitScale: number): HT
     coinSide: coinDesign.obverse,
     portraitScale: portraitScale,
   });
+  obversePreview.className += ' w-full max-w-[280px]';
 
   // Reverse preview
   const reversePreview = createCoinPreview({
@@ -261,29 +333,34 @@ function createPreviewSection(coinDesign: CoinDesign, portraitScale: number): HT
     coinSide: coinDesign.reverse,
     portraitScale: portraitScale,
   });
+  reversePreview.className += ' w-full max-w-[280px]';
 
   previewGrid.appendChild(obversePreview);
   previewGrid.appendChild(reversePreview);
-  section.appendChild(previewGrid);
+  column.appendChild(previewGrid);
 
-  return section;
+  return column;
 }
 
 /**
- * Creates action buttons section
+ * Creates the Export SVG / Reset Design action buttons
  * @param coinDesign - Current coin design
+ * @param getPortraitScale - Getter for the current portrait scale
  * @returns Action buttons container
  */
-function createActionButtons(coinDesign: CoinDesign, getPortraitScale: () => number): HTMLElement {
+function createActionButtons(
+  coinDesign: CoinDesign,
+  getPortraitScale: () => number
+): HTMLElement {
   const container = document.createElement('div');
-  container.className = 'mt-8 flex flex-col sm:flex-row gap-4 justify-center';
+  container.className = 'shrink-0 flex flex-col xs:flex-row gap-2';
 
   // Export SVG button
   const exportButton = document.createElement('button');
   exportButton.type = 'button';
-  exportButton.className = 'btn-primary';
+  exportButton.className = 'btn-primary-compact whitespace-nowrap';
   exportButton.textContent = 'Export SVG Files';
-  
+
   exportButton.addEventListener('click', async () => {
     try {
       // Validate design
@@ -314,8 +391,8 @@ function createActionButtons(coinDesign: CoinDesign, getPortraitScale: () => num
       showNotification('SVG files downloaded successfully!', 'success');
 
     } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
+      const errorMessage = error instanceof Error
+        ? error.message
         : 'Failed to export SVG files';
       showNotification(`Error: ${errorMessage}`, 'error');
       console.error('Export error:', error);
@@ -328,9 +405,9 @@ function createActionButtons(coinDesign: CoinDesign, getPortraitScale: () => num
   // Reset button
   const resetButton = document.createElement('button');
   resetButton.type = 'button';
-  resetButton.className = 'btn-secondary';
+  resetButton.className = 'btn-secondary-compact whitespace-nowrap';
   resetButton.textContent = 'Reset Design';
-  
+
   resetButton.addEventListener('click', () => {
     if (confirm('Are you sure you want to reset the entire design? This cannot be undone.')) {
       window.location.reload();
