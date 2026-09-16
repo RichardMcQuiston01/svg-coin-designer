@@ -12,9 +12,15 @@ A TypeScript-based web application for designing custom commemorative coins with
   - Circular cropping
   - Contrast and brightness adjustment
   - Background removal (basic implementation, off by default)
+- **Display Settings**: Adjust portrait size, curved-text font (Sans Serif, Serif, or
+  Monospace), and the text offset from the portrait guide, from a gear-icon panel that
+  remembers your choices between visits
 - **Live Preview**: Real-time preview of coin designs as you edit
-- **SVG Export**: Generate high-quality SVG files suitable for laser engraving
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **SVG Export**: Generate laser-ready SVG files, color-coded by intended operation
+  (Score for the coin outline and portrait guide, Engrave for the text) so LightBurn and
+  xTool Creative Space can auto-assign layers on import
+- **Responsive Design**: Fits a desktop viewport without scrolling; works on tablet and
+  mobile too
 
 ## Documentation
 
