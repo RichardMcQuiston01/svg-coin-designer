@@ -126,7 +126,7 @@ export function createCoinEditor(containerId: string): CoinDesign {
   container.appendChild(previewSection);
 
   // Create action buttons
-  const actionButtons = createActionButtons(coinDesign, portraitScale);
+  const actionButtons = createActionButtons(coinDesign, () => portraitScale);
   container.appendChild(actionButtons);
 
   return coinDesign;
@@ -274,7 +274,7 @@ function createPreviewSection(coinDesign: CoinDesign, portraitScale: number): HT
  * @param coinDesign - Current coin design
  * @returns Action buttons container
  */
-function createActionButtons(coinDesign: CoinDesign, portraitScale: number): HTMLElement {
+function createActionButtons(coinDesign: CoinDesign, getPortraitScale: () => number): HTMLElement {
   const container = document.createElement('div');
   container.className = 'mt-8 flex flex-col sm:flex-row gap-4 justify-center';
 
@@ -301,7 +301,7 @@ function createActionButtons(coinDesign: CoinDesign, portraitScale: number): HTM
 
       // Generate SVGs
       const config = createDefaultSvgConfig();
-      config.portraitScale = portraitScale;
+      config.portraitScale = getPortraitScale();
       const result = await generateCoinSvgs(coinDesign, config);
 
       if (!result.success || !result.obverseSvg || !result.reverseSvg) {
