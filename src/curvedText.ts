@@ -1,9 +1,14 @@
 /**
  * Curved Text Rendering
  *
- * The single renderer for text set around the rim of a coin. Both the live
- * preview and the SVG export use it, so what a user arranges on screen is what
- * comes out of the exported file.
+ * Renders text set around the rim of a coin using a native SVG `<textPath>`.
+ * Every browser supports this, so the live preview (`CoinPreview.ts`) uses it
+ * directly. The SVG export used to as well, but some laser software (xTool
+ * Creative Space, at least) does not implement `<textPath>` and silently drops
+ * the text - see `glyphOutline.ts`, which bakes the same arc geometry into
+ * plain filled `<path>` glyph outlines for the export instead. `CAP_HEIGHT_RATIO`
+ * and `MAX_ARC_DEGREES` are exported so both renderers agree on where curved
+ * text sits and when it shrinks to fit.
  */
 
 /**
@@ -31,7 +36,7 @@ const CHARACTER_WIDTH_RATIO = 12 / 14;
  * the baseline is pushed out by this much for the glyphs to land in the same
  * band rather than across the portrait.
  */
-const CAP_HEIGHT_RATIO = 0.72;
+export const CAP_HEIGHT_RATIO = 0.72;
 
 /**
  * Extra arc length beyond the estimated width of the text.
@@ -49,7 +54,7 @@ const ARC_SLACK = 1.25;
  * Two curves of 170 degrees would meet at the sides of the coin. Text long
  * enough to need more than this is scaled down to fit instead.
  */
-const MAX_ARC_DEGREES = 170;
+export const MAX_ARC_DEGREES = 170;
 
 /**
  * Options for rendering one curve of text.

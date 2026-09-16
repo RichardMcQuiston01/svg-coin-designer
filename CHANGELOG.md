@@ -68,6 +68,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   guide circle blue and fills the curved text black, so LightBurn and xTool Creative
   Space can auto-assign a Score and an Engrave layer on import instead of importing
   everything as one undifferentiated black layer.
+- `src/glyphOutline.ts`, a second curved-text renderer used only by the SVG export.
+  Confirmed by testing a real export in xTool Creative Space: its SVG importer does not
+  implement `<textPath>` at all, so exported curved text rendered nowhere - the portrait
+  imported fine as an Engrave layer, but the text was simply absent. `glyphOutline.ts`
+  loads the selected font (a bundled Liberation Bold face - see below) via `opentype.js`,
+  and bakes each glyph's own outline into a plain filled `<path>`, positioned and rotated
+  along the same arc `curvedText.ts` would use, with no `<textPath>`, no font
+  substitution, and no dependency on the importer understanding text layout at all. The
+  live preview is unaffected and still uses `curvedText.ts`'s `<textPath>`, which every
+  browser already renders correctly - see the new doc comments atop both files. Since
+  loading and parsing a font is inherently asynchronous, `generateCoinSideSvg()` and its
+  two curve calls are now `async`/`await`, which `generateCoinSvgs()` already
+  accommodated (it already returned a `Promise`).
+- `src/assets/fonts/` - vendored Liberation Sans/Serif/Mono Bold `.ttf` files (plus
+  `OFL.txt`/`AUTHORS`) for `glyphOutline.ts` to outline text with. Extracted once from
+  the `@formepdf/fonts-standard` npm package (not a runtime dependency) rather than
+  bundling the proprietary Arial/Times New Roman/Courier New fonts the Display Settings
+  panel names, which cannot be redistributed; Liberation is metrically and visually
+  compatible with all three and SIL Open Font License-licensed. Only the Bold weight is
+  vendored, since curved text is always rendered bold, roughly halving the font payload
+  versus also including Regular.
+- `opentype.js` (pinned below 2.0.0, which has a known SVG coordinate-flip regression)
+  and its `@types/opentype.js` dev dependency, for parsing the vendored fonts and
+  generating glyph outline paths.
+- `CAP_HEIGHT_RATIO` and `MAX_ARC_DEGREES` are now exported from `src/curvedText.ts` (no
+  behaviour change) so `glyphOutline.ts` can share them, keeping the two renderers'
+  curved-text geometry in agreement.
+- `vite.config.ts`'s `assetsInlineLimit` now force-inlines `.ttf` as well as `.woff2`,
+  for the same reason as the existing rule: the vendored fonts are 300-400 KB each, well
+  past Vite's default 4 KB threshold, and would otherwise ship as separate `dist/assets/`
+  files that break the standalone build over `file://`.
 
 ### Changed
 
@@ -130,6 +161,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SvgConfig.fontFamily` is now actually passed into `createCurvedText()` on export. It
   was defined but never read, so the export always fell back to `createCurvedText()`'s
   own hard-coded default regardless of what the config said.
+- The standalone build grew from ~102 KB to ~1.7 MB (gzipped: ~53 KB to ~820 KB), almost
+  entirely the ~1.1 MB of vendored font data `glyphOutline.ts` needs to outline curved
+  text for export - see the new `src/assets/fonts/` entry above and
+  [TECHNOLOGY.md's Known Gaps](docs/TECHNOLOGY.md#known-gaps) for a possible future
+  reduction (subsetting the fonts to the glyphs curved text can actually contain).
+- `src/svgGenerator.test.ts`'s `curved text orientation` suite now parses the exported
+  `<path transform="translate(x y) rotate(deg)">` glyph placements instead of a
+  `<textPath>`'s `<path d="M ... A ...">` arc command, since the export no longer emits
+  one. Two of the five tests (mirrored-circle and inside-coin-outline checks) had gone
+  silently vacuous under the new markup - their regexes matched nothing, so their loops
+  ran zero times and passed without checking anything - and are rewritten alongside the
+  three that failed outright.
 
 ### Removed
 

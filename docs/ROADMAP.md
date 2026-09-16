@@ -15,8 +15,11 @@
 - [ ] Batch processing
 - [ ] Docker Container Demo
 - [ ] Pre-processing of Images for Laser Engraving
-- [ ] Convert exported curved text to outline paths, so it does not depend on the laser
-      software's own font substitution (see [TECHNOLOGY.md](TECHNOLOGY.md#known-gaps))
+- [x] Convert exported curved text to outline paths, so it does not depend on the laser
+      software's own font substitution or `<textPath>` support - see `glyphOutline.ts`
+- [ ] Subset the vendored outline fonts to the glyphs curved text can actually contain,
+      to shrink the ~1.1 MB they currently add to the build (see
+      [TECHNOLOGY.md](TECHNOLOGY.md#known-gaps))
 
 ## Future AI Integration
 

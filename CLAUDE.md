@@ -111,10 +111,13 @@ All source code is in the `src/` directory:
 - **Components**: `src/CoinEditor.ts`, `src/TextInput.ts`, `src/NumberInput.ts`,
   `src/ImageUploader.ts`, `src/CoinPreview.ts`, `src/DonateWidget.ts`
 - **Utilities**: `src/imageProcessing.ts`, `src/svgGenerator.ts`, `src/curvedText.ts`,
-  `src/templates.ts`
+  `src/glyphOutline.ts`, `src/templates.ts`
 - **Types**: `src/index.ts` (TypeScript type definitions)
 - **Entry Point**: `src/main.ts`
 - **Styles**: `src/main.css`
+- **Vendored fonts**: `src/assets/fonts/` - Liberation Sans/Serif/Mono Bold (`.ttf`, SIL
+  Open Font License - `OFL.txt`/`AUTHORS` in the same directory), used by
+  `glyphOutline.ts` to outline curved text for export
 
 All imports within `src/` use relative paths (e.g., `import {createTextInput} from './TextInput'`).
 
@@ -134,14 +137,29 @@ The `processImage()` function in `imageProcessing.ts` applies transformations in
 
 ## SVG Generation
 
-The `svgGenerator.ts` creates laser-ready SVG files:
+The `svgGenerator.ts` creates laser-ready SVG files. Curved text uses **two different
+renderers** for the same geometry, in `curvedText.ts` and `glyphOutline.ts`:
 
-### Curved Text Algorithm
+- **Live preview** (`CoinPreview.ts`) uses `curvedText.ts`'s native `<textPath>` - every
+  browser renders this correctly and instantly, no font loading required.
+- **SVG export** (`svgGenerator.ts`) uses `glyphOutline.ts` instead: xTool Creative
+  Space's SVG importer does not implement `<textPath>` and silently drops the text, so
+  the export bakes each character's own glyph outline (from a bundled Liberation Bold
+  font - see `src/assets/fonts/`) into a plain filled `<path>`, positioned and rotated
+  along the arc. No `<textPath>`, no font substitution - just path geometry any SVG
+  importer can draw. This is why `generateCoinSvgs()`/`generateCoinSideSvg()` are async:
+  the font has to be fetched and parsed (via `opentype.js`) before it can be outlined.
 
-1. Calculate arc length needed for text
-2. Center text by adjusting start angle
-3. Generate SVG arc path (`M ... A ...`)
-4. Use `<textPath>` with `startOffset="50%"` and `text-anchor="middle"`
+### Curved Text Algorithm (both renderers)
+
+1. Calculate arc length needed for the text - `curvedText.ts` estimates from an
+   average-character-width ratio; `glyphOutline.ts` uses the real font's advance widths,
+   since it already has the font loaded to draw the outlines
+2. Center the arc on the top or bottom of the coin
+3. `curvedText.ts` generates one SVG arc path (`M ... A ...`) and sets the whole string
+   on it with `<textPath startOffset="50%" text-anchor="middle">`; `glyphOutline.ts`
+   places each glyph individually along the same arc angle, each as its own
+   `<path transform="translate(x y) rotate(deg)">`
 
 ### SVG Structure
 
@@ -468,8 +486,10 @@ Vite builds to `dist/` with **vite-plugin-singlefile** to create a standalone HT
 
 ### Build Characteristics:
 - **Single self-contained HTML file**: All JavaScript and CSS inlined in `dist/index.html`
-- **File size**: ~102KB (gzipped: ~53KB) as of this revision - check `npm run build`'s
-  own output for the current number, since it grows as features are added
+- **File size**: ~1.7MB (gzipped: ~820KB) as of this revision - check `npm run build`'s
+  own output for the current number, since it grows as features are added. Most of this
+  is the ~1.1MB of vendored Liberation Bold font data (see File Organization above),
+  base64-inlined so `glyphOutline.ts` can outline curved text for export fully offline
 - **Standalone capability**: Can be opened directly in any browser via `file://` protocol
 - **Source maps**: Available (not inlined, optional for debugging)
 - **External assets**: Only `coin-icon.svg` remains separate (favicon)
