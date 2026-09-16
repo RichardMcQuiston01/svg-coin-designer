@@ -31,6 +31,15 @@ export const FONT_OPTIONS: FontOption[] = [
 ];
 
 /**
+ * Stroke/fill colors used by the exported SVG so laser software (LightBurn,
+ * xTool Creative Space) can auto-assign the right operation to each layer
+ * when the file is imported, following the color convention those tools'
+ * users commonly map: black for Engrave, blue for Score.
+ */
+export const LASER_ENGRAVE_COLOR = '#000000';
+export const LASER_SCORE_COLOR = '#0000FF';
+
+/**
  * Creates the default display settings (portrait size, font, text offset)
  * shared by the live preview and SVG export
  * @returns Default display settings
@@ -70,13 +79,13 @@ function generateCoinSideSvg(
 <svg width="${svgSize}" height="${svgSize}" viewBox="0 0 ${svgSize} ${svgSize}" 
      xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
   
-  <!-- Coin outline -->
-  <circle cx="${centerX}" cy="${centerY}" r="${coinRadius}" 
-          fill="none" stroke="black" stroke-width="2"/>
-  
-  <!-- Inner circle for portrait area -->
-  <circle cx="${centerX}" cy="${centerY}" r="${portraitRadius}" 
-          fill="none" stroke="black" stroke-width="1" stroke-dasharray="5,5"/>
+  <!-- Coin outline (Score) -->
+  <circle cx="${centerX}" cy="${centerY}" r="${coinRadius}"
+          fill="none" stroke="${LASER_SCORE_COLOR}" stroke-width="2"/>
+
+  <!-- Inner circle for portrait area (Score) -->
+  <circle cx="${centerX}" cy="${centerY}" r="${portraitRadius}"
+          fill="none" stroke="${LASER_SCORE_COLOR}" stroke-width="1" stroke-dasharray="5,5"/>
 `;
 
   // Add portrait image if provided
@@ -97,7 +106,7 @@ function generateCoinSideSvg(
   // Add top curved text
   if (topText.trim()) {
     svg += `
-  <!-- Top curve text -->
+  <!-- Top curve text (Engrave) -->
   ${createCurvedText({
     text: topText.toUpperCase(),
     centerX,
@@ -105,6 +114,7 @@ function generateCoinSideSvg(
     radius: textRadius,
     fontSize,
     isTopCurve: true,
+    fill: LASER_ENGRAVE_COLOR,
     fontFamily: config.fontFamily,
   })}
 `;
@@ -113,7 +123,7 @@ function generateCoinSideSvg(
   // Add bottom curved text
   if (bottomText.trim()) {
     svg += `
-  <!-- Bottom curve text -->
+  <!-- Bottom curve text (Engrave) -->
   ${createCurvedText({
     text: bottomText.toUpperCase(),
     centerX,
@@ -121,6 +131,7 @@ function generateCoinSideSvg(
     radius: textRadius,
     fontSize,
     isTopCurve: false,
+    fill: LASER_ENGRAVE_COLOR,
     fontFamily: config.fontFamily,
   })}
 `;
