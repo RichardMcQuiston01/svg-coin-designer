@@ -18,7 +18,9 @@ A TypeScript-based web application for designing custom commemorative coins with
 - **Live Preview**: Real-time preview of coin designs as you edit
 - **SVG Export**: Generate laser-ready SVG files, color-coded by intended operation
   (Score for the coin outline and portrait guide, Engrave for the text) so LightBurn and
-  xTool Creative Space can auto-assign layers on import
+  xTool Creative Space can auto-assign layers on import. Curved text is exported as
+  outline paths rather than live text, since not every laser importer supports curved
+  `<textPath>` text
 - **Responsive Design**: Fits a desktop viewport without scrolling; works on tablet and
   mobile too
 

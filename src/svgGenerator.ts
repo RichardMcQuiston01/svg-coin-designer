@@ -3,7 +3,8 @@
  * Creates SVG files for laser engraving with curved text and portraits
  */
 
-import {createCurvedText, TEXT_FONT_SIZE_RATIO} from './curvedText';
+import {TEXT_FONT_SIZE_RATIO} from './curvedText';
+import {createCurvedTextOutline, resolveFontOptionId} from './glyphOutline';
 import type {
   CoinDesign,
   CoinDisplaySettings,
@@ -60,12 +61,12 @@ export function createDefaultDisplaySettings(): CoinDisplaySettings {
  * @param config - SVG configuration
  * @returns SVG string
  */
-function generateCoinSideSvg(
+async function generateCoinSideSvg(
   topText: string,
   bottomText: string,
   portraitData: string | null,
   config: SvgConfig
-): string {
+): Promise<string> {
   const svgSize = 1000; // Fixed SVG viewBox size
   const centerX = svgSize / 2;
   const centerY = svgSize / 2;
@@ -73,6 +74,7 @@ function generateCoinSideSvg(
   const textRadius = coinRadius * config.textRadiusScale;
   const portraitRadius = coinRadius * config.portraitScale;
   const fontSize = svgSize * TEXT_FONT_SIZE_RATIO;
+  const fontOptionId = resolveFontOptionId(config.fontFamily, FONT_OPTIONS);
 
   // Create the SVG header
   let svg = `<?xml version="1.0" encoding="UTF-8" standalone="no"?>
@@ -107,7 +109,7 @@ function generateCoinSideSvg(
   if (topText.trim()) {
     svg += `
   <!-- Top curve text (Engrave) -->
-  ${createCurvedText({
+  ${await createCurvedTextOutline({
     text: topText.toUpperCase(),
     centerX,
     centerY,
@@ -115,7 +117,7 @@ function generateCoinSideSvg(
     fontSize,
     isTopCurve: true,
     fill: LASER_ENGRAVE_COLOR,
-    fontFamily: config.fontFamily,
+    fontOptionId,
   })}
 `;
   }
@@ -124,7 +126,7 @@ function generateCoinSideSvg(
   if (bottomText.trim()) {
     svg += `
   <!-- Bottom curve text (Engrave) -->
-  ${createCurvedText({
+  ${await createCurvedTextOutline({
     text: bottomText.toUpperCase(),
     centerX,
     centerY,
@@ -132,7 +134,7 @@ function generateCoinSideSvg(
     fontSize,
     isTopCurve: false,
     fill: LASER_ENGRAVE_COLOR,
-    fontFamily: config.fontFamily,
+    fontOptionId,
   })}
 `;
   }
@@ -155,7 +157,7 @@ export async function generateCoinSvgs(
 ): Promise<SvgGenerationResult> {
   try {
     // Generate obverse (front) SVG
-    const obverseSvg = generateCoinSideSvg(
+    const obverseSvg = await generateCoinSideSvg(
       design.obverse.topCurveText,
       design.obverse.bottomCurveText,
       design.obverse.coinPortrait,
@@ -163,7 +165,7 @@ export async function generateCoinSvgs(
     );
 
     // Generate reverse (back) SVG
-    const reverseSvg = generateCoinSideSvg(
+    const reverseSvg = await generateCoinSideSvg(
       design.reverse.topCurveText,
       design.reverse.bottomCurveText,
       design.reverse.coinPortrait,

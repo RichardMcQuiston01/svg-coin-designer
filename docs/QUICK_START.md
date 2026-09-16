@@ -85,10 +85,13 @@ imported color (LightBurn, xTool Creative Space):
 
 Neither tool has a universal built-in meaning for these colors - you still assign the
 operation to each layer once after import, but the color split does the grouping for
-you. If you're importing into **xTool Creative Space**, note that XCS's own SVG guidance
-recommends converting text to outline paths before import (e.g. in Inkscape, `Path >
-Object to Path`) for reliable processing, since the exported text is a live `<text>`
-element rather than a path.
+you.
+
+The curved text itself is already exported as outline paths, not a live `<text>`
+element - xTool Creative Space's SVG importer does not support `<textPath>` (confirmed
+by testing a real export in it) and would otherwise drop the text entirely. There is
+nothing to convert yourself; this is why the standalone build is close to 2 MB rather
+than a few hundred KB - see [TECHNOLOGY.md](TECHNOLOGY.md#svg-generation).
 
 ## Image Tips
 
