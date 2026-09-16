@@ -4,7 +4,44 @@
  */
 
 import {createCurvedText, TEXT_FONT_SIZE_RATIO} from './curvedText';
-import type {CoinDesign, SvgConfig, SvgGenerationResult} from './index';
+import type {
+  CoinDesign,
+  CoinDisplaySettings,
+  FontOption,
+  SvgConfig,
+  SvgGenerationResult,
+} from './index';
+
+/**
+ * Fonts offered in the display settings panel, applied to the curved text in
+ * both the live preview and the exported SVG.
+ */
+export const FONT_OPTIONS: FontOption[] = [
+  {id: 'sans', label: 'Sans Serif (Arial)', value: 'Arial, Helvetica, sans-serif'},
+  {
+    id: 'serif',
+    label: 'Serif (Times New Roman)',
+    value: "'Times New Roman', Times, serif",
+  },
+  {
+    id: 'mono',
+    label: 'Monospace (Courier New)',
+    value: "'Courier New', Courier, monospace",
+  },
+];
+
+/**
+ * Creates the default display settings (portrait size, font, text offset)
+ * shared by the live preview and SVG export
+ * @returns Default display settings
+ */
+export function createDefaultDisplaySettings(): CoinDisplaySettings {
+  return {
+    portraitScale: 0.85, // Portrait is 85% of coin diameter
+    fontFamily: FONT_OPTIONS[0]!.value,
+    textRadiusScale: 0.85, // Curved text at 85% of the coin radius
+  };
+}
 
 /**
  * Generates SVG for a single coin side
@@ -24,7 +61,7 @@ function generateCoinSideSvg(
   const centerX = svgSize / 2;
   const centerY = svgSize / 2;
   const coinRadius = (svgSize / 2) * 0.9; // 90% of SVG size
-  const textRadius = coinRadius * 0.85; // Text at 85% of coin radius
+  const textRadius = coinRadius * config.textRadiusScale;
   const portraitRadius = coinRadius * config.portraitScale;
   const fontSize = svgSize * TEXT_FONT_SIZE_RATIO;
 
@@ -68,6 +105,7 @@ function generateCoinSideSvg(
     radius: textRadius,
     fontSize,
     isTopCurve: true,
+    fontFamily: config.fontFamily,
   })}
 `;
   }
@@ -83,6 +121,7 @@ function generateCoinSideSvg(
     radius: textRadius,
     fontSize,
     isTopCurve: false,
+    fontFamily: config.fontFamily,
   })}
 `;
   }
@@ -146,9 +185,8 @@ export function createDefaultSvgConfig(): SvgConfig {
   return {
     coinDiameter: 40, // 40mm diameter
     dpi: 300,
-    fontFamily: 'Arial, sans-serif',
     fontSize: 14,
-    portraitScale: 0.85, // Portrait is 85% of coin diameter
+    ...createDefaultDisplaySettings(),
   };
 }
 

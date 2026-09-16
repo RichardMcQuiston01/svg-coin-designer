@@ -4,7 +4,8 @@
  */
 
 import {createCurvedText, TEXT_FONT_SIZE_RATIO} from './curvedText';
-import type {CoinSide} from './index';
+import {createDefaultDisplaySettings} from './svgGenerator';
+import type {CoinDisplaySettings, CoinSide} from './index';
 
 /** Source of unique clip-path ids across every preview on the page */
 let nextClipId = 0;
@@ -19,8 +20,8 @@ export interface CoinPreviewConfig {
   title: string;
   /** Coin side data to display */
   coinSide: CoinSide;
-  /** Portrait scale (0-1, where 1 = 100% of coin radius) */
-  portraitScale?: number;
+  /** Display settings (portrait size, font, text offset) */
+  settings?: CoinDisplaySettings;
 }
 
 /**
@@ -43,7 +44,11 @@ export function createCoinPreview(config: CoinPreviewConfig): HTMLDivElement {
   previewContainer.id = config.id;
 
   // Create SVG preview
-  updatePreview(previewContainer, config.coinSide, config.portraitScale || 0.85);
+  updatePreview(
+    previewContainer,
+    config.coinSide,
+    config.settings ?? createDefaultDisplaySettings()
+  );
 
   // Assemble component
   container.appendChild(title);
@@ -56,19 +61,19 @@ export function createCoinPreview(config: CoinPreviewConfig): HTMLDivElement {
  * Updates the coin preview with current design
  * @param previewElement - Preview container element
  * @param coinSide - Coin side data to display
- * @param portraitScale - Portrait scale (0-1, where 1 = 100% of coin radius)
+ * @param settings - Display settings (portrait size, font, text offset)
  */
 function updatePreview(
   previewElement: HTMLElement,
   coinSide: CoinSide,
-  portraitScale: number = 0.85
+  settings: CoinDisplaySettings
 ): void {
   const svgSize = 400;
   const centerX = svgSize / 2;
   const centerY = svgSize / 2;
   const coinRadius = svgSize / 2 * 0.95;
-  const textRadius = coinRadius * 0.85;
-  const portraitRadius = coinRadius * portraitScale;
+  const textRadius = coinRadius * settings.textRadiusScale;
+  const portraitRadius = coinRadius * settings.portraitScale;
   const fontSize = svgSize * TEXT_FONT_SIZE_RATIO;
 
   // Create SVG
@@ -148,6 +153,7 @@ function updatePreview(
       fontSize,
       isTopCurve: true,
       fill: '#333',
+      fontFamily: settings.fontFamily,
     });
   }
 
@@ -161,6 +167,7 @@ function updatePreview(
       fontSize,
       isTopCurve: false,
       fill: '#333',
+      fontFamily: settings.fontFamily,
     });
   }
 
@@ -175,15 +182,15 @@ function updatePreview(
  * Updates an existing coin preview
  * @param previewId - ID of the preview element
  * @param coinSide - Updated coin side data
- * @param portraitScale - Portrait scale (0-1, where 1 = 100% of coin radius)
+ * @param settings - Display settings (portrait size, font, text offset)
  */
 export function updateCoinPreview(
   previewId: string,
   coinSide: CoinSide,
-  portraitScale: number = 0.85
+  settings: CoinDisplaySettings = createDefaultDisplaySettings()
 ): void {
   const previewElement = document.getElementById(previewId);
   if (previewElement) {
-    updatePreview(previewElement, coinSide, portraitScale);
+    updatePreview(previewElement, coinSide, settings);
   }
 }
