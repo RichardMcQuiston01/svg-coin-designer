@@ -79,23 +79,39 @@ State management is **callback-based** with unidirectional data flow:
 
 1. User interacts with component (e.g., TextInput)
 2. Component calls `onChange` callback with new value
-3. Parent (CoinEditor) updates `coinDesign` state object
-4. Parent calls `updateCoinPreview()` to refresh preview
+3. Parent (CoinEditor) updates `coinDesign` (or `displaySettings`) state
+4. Parent calls `updateCoinPreview()` to refresh the affected preview
 5. Preview re-renders with new data
 
-**Central State**: The `CoinDesign` object in `CoinEditor.ts` is the single source of truth:
+**Central State**: `CoinEditor.ts` owns two objects as the source of truth - the design
+content, and the display settings applied to both sides:
 ```typescript
 interface CoinDesign {
   obverse: CoinSide;
   reverse: CoinSide;
 }
+
+interface CoinDisplaySettings {
+  portraitScale: number;   // portrait diameter as a fraction of the coin radius
+  fontFamily: string;      // curved text font, picked from FONT_OPTIONS
+  textRadiusScale: number; // curved text radius as a fraction of the coin radius
+}
 ```
+
+`displaySettings` is mutated in place and read by closures, rather than reassigned, so
+every callback captured when the UI was built always sees the current values. It is
+edited from the gear-icon **Display Settings** panel in the header (Portrait Size, Font,
+Text Offset) and persists to `localStorage` under `coinDesigner.displaySettings` - see
+[Data Persistence](#data-persistence) below. `coinDesign` (the actual text and portraits)
+does not currently persist.
 
 ### File Organization
 
 All source code is in the `src/` directory:
-- **Components**: `src/CoinEditor.ts`, `src/TextInput.ts`, `src/ImageUploader.ts`, `src/CoinPreview.ts`
-- **Utilities**: `src/imageProcessing.ts`, `src/svgGenerator.ts`, `src/templates.ts`
+- **Components**: `src/CoinEditor.ts`, `src/TextInput.ts`, `src/NumberInput.ts`,
+  `src/ImageUploader.ts`, `src/CoinPreview.ts`, `src/DonateWidget.ts`
+- **Utilities**: `src/imageProcessing.ts`, `src/svgGenerator.ts`, `src/curvedText.ts`,
+  `src/templates.ts`
 - **Types**: `src/index.ts` (TypeScript type definitions)
 - **Entry Point**: `src/main.ts`
 - **Styles**: `src/main.css`
@@ -131,16 +147,30 @@ The `svgGenerator.ts` creates laser-ready SVG files:
 
 Fixed 1000x1000 viewBox with:
 - Outer circle at 90% (coin outline)
-- Text radius at 85% of coin
-- Portrait radius at 60% of coin (configurable via `portraitScale`)
+- Text radius at 85% of coin by default, configurable via `textRadiusScale` (the
+  **Text Offset** control - it sets the gap between the dashed portrait guide and the
+  curved text)
+- Portrait radius at 85% of coin by default, configurable via `portraitScale` (the
+  **Portrait Size** control)
 - Portrait clipped using `<clipPath>` with circular `<circle>`
 
 ### Key Constants
 
 - `svgSize = 1000` (viewBox)
 - `coinRadius = svgSize / 2 * 0.9`
-- `textRadius = coinRadius * 0.85`
-- `portraitRadius = coinRadius * config.portraitScale` (default 0.6)
+- `textRadius = coinRadius * config.textRadiusScale` (default 0.85)
+- `portraitRadius = coinRadius * config.portraitScale` (default 0.85)
+
+### Laser Software Colors
+
+The coin outline and the portrait guide circle are stroked `LASER_SCORE_COLOR`
+(`#0000FF`, blue); the curved text is filled `LASER_ENGRAVE_COLOR` (`#000000`, black).
+Both constants live in `svgGenerator.ts`. LightBurn and xTool Creative Space can
+auto-assign an operation per imported layer by color, so this lets a fresh import
+separate into a Score layer (the two circles) and an Engrave layer (the text) without
+manual re-assignment. Neither tool has a universal built-in color-to-operation mapping -
+this follows the common hobbyist convention (black = fill/engrave, blue = line) rather
+than a guarantee.
 
 ## TypeScript Configuration
 
@@ -163,6 +193,14 @@ Strict mode enabled with additional checks:
 - Auto-save on user input changes
 - Restore previous design on page load
 - Provide "Clear Saved Data" option in UI
+
+**Already implemented for display settings**: `CoinEditor.ts` follows this exact pattern
+for `displaySettings` (portrait size, font, text offset), under the
+`coinDesigner.displaySettings` key - see `loadDisplaySettings()` / `saveDisplaySettings()`.
+`localStorage` access is wrapped in `try`/`catch` there, since Safari private mode and
+blocked storage both throw; a failed load falls back to defaults, and a failed save still
+applies for the rest of the visit. The design content (`coinDesign`: text and portraits)
+does **not** yet follow this pattern - it is still lost on reload, per the pattern above.
 
 **Implementation Pattern**:
 ```typescript
@@ -384,10 +422,14 @@ Edit `src/imageProcessing.ts` - changes apply automatically to all uploads. Defa
 
 ### Adjusting Coin Layout
 
-Modify radius calculations in `src/svgGenerator.ts`:
-- Text position: Change `textRadius = coinRadius * 0.85`
-- Portrait size: Change `portraitScale` in `createDefaultSvgConfig()`
-- Coin margins: Change `coinRadius = (svgSize / 2) * 0.9`
+Portrait size and text offset are user-adjustable at runtime from the gear-icon Display
+Settings panel - no code change needed for a one-off design. To change the *defaults*,
+or the fixed geometry nothing exposes a control for:
+- Text position default: Change `textRadiusScale` in `createDefaultDisplaySettings()`
+  (`src/svgGenerator.ts`)
+- Portrait size default: Change `portraitScale` in the same function
+- Coin margins: Change `coinRadius = (svgSize / 2) * 0.9` in `generateCoinSideSvg()`
+  (`src/svgGenerator.ts`)
 
 ### Updating Styles
 
@@ -426,7 +468,8 @@ Vite builds to `dist/` with **vite-plugin-singlefile** to create a standalone HT
 
 ### Build Characteristics:
 - **Single self-contained HTML file**: All JavaScript and CSS inlined in `dist/index.html`
-- **File size**: ~31KB (gzipped: ~9KB)
+- **File size**: ~102KB (gzipped: ~53KB) as of this revision - check `npm run build`'s
+  own output for the current number, since it grows as features are added
 - **Standalone capability**: Can be opened directly in any browser via `file://` protocol
 - **Source maps**: Available (not inlined, optional for debugging)
 - **External assets**: Only `coin-icon.svg` remains separate (favicon)

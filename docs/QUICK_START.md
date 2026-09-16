@@ -19,9 +19,16 @@ Your application will be available at `http://localhost:3000`
 
 ## Using the Application
 
+The **Export SVG Files** and **Reset Design** buttons sit in the top-right corner of the
+header, next to a gear icon for Display Settings - both stay visible while you edit.
+On a desktop-width window the whole editor fits without scrolling.
+
 ### Design Your Coin in 4 Steps:
 
 #### 1. Obverse (Front) Side
+
+The **Obverse (Front)** / **Reverse (Back)** tabs switch which side you're editing; each
+side keeps its own fields.
 
 - **Top Curve Text**: Enter text like "CERTIFIED NICE LIST" (50 characters max)
 - **Bottom Curve Text**: Enter a name or date (50 characters max)
@@ -29,15 +36,28 @@ Your application will be available at `http://localhost:3000`
 
 #### 2. Reverse (Back) Side
 
+Click the **Reverse (Back)** tab, then:
+
 - **Top Curve Text**: Enter text like "MERRY CHRISTMAS"
 - **Bottom Curve Text**: Enter year like "2025"
 - **Upload Portrait**: Upload a themed image (e.g., Santa)
 
-#### 3. Portrait Size
+#### 3. Display Settings
 
-Use the **Portrait Size** control below the two editors to set how much of the coin the
-portrait fills. It accepts 0.25 to 0.90 in steps of 0.05 and defaults to 0.85. The
-setting applies to both sides and updates the previews live.
+Click the gear icon in the header to open the **Display Settings** panel. It applies to
+both sides and updates the previews live:
+
+- **Portrait Size**: How much of the coin the portrait fills. 0.25 to 0.90 in steps of
+  0.05, defaults to 0.85.
+- **Font**: Sans Serif (Arial), Serif (Times New Roman), or Monospace (Courier New),
+  applied to the curved text.
+- **Text Offset**: The curved text's radius as a fraction of the coin radius - in effect,
+  the gap between the dashed portrait guide circle and the text. 0.5 to 0.9 in steps of
+  0.01, defaults to 0.85.
+
+All three settings are remembered in your browser (`localStorage`) and restored the next
+time you open the app - close the settings panel with the &times; button, the backdrop,
+or the Escape key.
 
 #### 4. Export
 
@@ -51,7 +71,24 @@ export will run. If either side is completely empty you will get a warning inste
 a download.
 
 To start over, click **Reset Design**. It asks for confirmation, then reloads the page.
-There is no undo, and nothing is saved between reloads.
+There is no undo, and the design's text and images are not saved between reloads (unlike
+Display Settings, which are).
+
+## Laser Software Import
+
+The exported SVG color-codes its shapes for laser software that assigns an operation per
+imported color (LightBurn, xTool Creative Space):
+
+- **Blue** (`#0000FF`) - the coin outline and the dashed portrait guide circle. Intended
+  for a **Score** (light line) operation.
+- **Black** (`#000000`) - the curved text. Intended for an **Engrave** (fill) operation.
+
+Neither tool has a universal built-in meaning for these colors - you still assign the
+operation to each layer once after import, but the color split does the grouping for
+you. If you're importing into **xTool Creative Space**, note that XCS's own SVG guidance
+recommends converting text to outline paths before import (e.g. in Inkscape, `Path >
+Object to Path`) for reliable processing, since the exported text is a live `<text>`
+element rather than a path.
 
 ## Image Tips
 
@@ -115,26 +152,40 @@ HTTP.
 
 ## Customization
 
-### Change the Portrait Size Default
+Portrait size, font, and text offset are all adjustable at runtime from the gear-icon
+Display Settings panel - the sections below are for changing the *defaults*, or options
+the UI doesn't expose a control for.
 
-Edit `createDefaultSvgConfig()` in `src/svgGenerator.ts`, and the matching initial
-value in `src/CoinEditor.ts`:
+### Change the Portrait Size or Text Offset Default
 
-```typescript
-portraitScale: 0.85, // 85% of the coin radius
-```
-
-### Change the Font
-
-Font family and size are hard-coded in the `<text>` element inside
-`createCurvedTextPath()` in `src/svgGenerator.ts`:
+Edit `createDefaultDisplaySettings()` in `src/svgGenerator.ts`:
 
 ```typescript
-<text font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="black">
+export function createDefaultDisplaySettings(): CoinDisplaySettings {
+  return {
+    portraitScale: 0.85,   // 85% of the coin radius
+    fontFamily: FONT_OPTIONS[0]!.value,
+    textRadiusScale: 0.85, // 85% of the coin radius
+  };
+}
 ```
 
-The `fontFamily` and `fontSize` fields on `SvgConfig` are not currently read, so
-editing them has no effect.
+### Add or Change a Font Option
+
+The Font picker's three options come from `FONT_OPTIONS` in `src/svgGenerator.ts`:
+
+```typescript
+export const FONT_OPTIONS: FontOption[] = [
+  {id: 'sans', label: 'Sans Serif (Arial)', value: 'Arial, Helvetica, sans-serif'},
+  {id: 'serif', label: 'Serif (Times New Roman)', value: "'Times New Roman', Times, serif"},
+  {id: 'mono', label: 'Monospace (Courier New)', value: "'Courier New', Courier, monospace"},
+];
+```
+
+Add an entry to offer a fourth font in the picker; the `value` is used as-is for the
+`<text>` element's `font-family`, in both the live preview and the export, so pick a
+family your laser software (and most browsers, for the preview) can already resolve
+without embedding a font file.
 
 ### Change the Coin Size
 
@@ -146,8 +197,8 @@ To change the proportions inside the SVG, edit the radius maths in
 `generateCoinSideSvg()` in `src/svgGenerator.ts`:
 
 ```typescript
-const coinRadius = (svgSize / 2) * 0.9;  // Coin outline
-const textRadius = coinRadius * 0.85;    // Text baseline
+const coinRadius = (svgSize / 2) * 0.9;              // Coin outline
+const textRadius = coinRadius * config.textRadiusScale; // Text baseline (default 0.85)
 ```
 
 ## Need Help?
@@ -161,7 +212,7 @@ const textRadius = coinRadius * 0.85;    // Text baseline
 
 - Wire up the templates defined in `src/templates.ts` - they are not yet used by the UI
 - Integrate AI background removal
-- Add custom fonts
-- Implement save/load functionality
+- Persist the design content (text and portraits), not just Display Settings, to
+  `localStorage`
 
 See [ROADMAP.md](ROADMAP.md) for the full list.

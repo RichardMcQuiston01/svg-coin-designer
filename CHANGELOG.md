@@ -53,6 +53,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   code is hidden below 400 px wide, where the card has no room for it and the phone
   holding it cannot scan its own display anyway.
 - An `xs` (400 px) Tailwind breakpoint, below the smallest stock one.
+- A tabbed switcher between the Obverse and Reverse side editors in `CoinEditor.ts`,
+  replacing the two side-by-side editor cards, so the design column fits a desktop
+  viewport without scrolling.
+- A gear-icon **Display Settings** panel in the header, replacing the standalone
+  Portrait Size card: it now also offers a **Font** picker (Sans Serif / Serif /
+  Monospace, `FONT_OPTIONS` in `src/svgGenerator.ts`) and a **Text Offset** slider
+  (`textRadiusScale`) controlling the gap between the dashed portrait guide and the
+  curved text. All three settings persist to `localStorage` under
+  `coinDesigner.displaySettings` and restore on reload, following the same
+  try/catch-wrapped pattern as the donate widget's dismissal flag.
+- `LASER_ENGRAVE_COLOR` (`#000000`) and `LASER_SCORE_COLOR` (`#0000FF`) in
+  `src/svgGenerator.ts`. The exported SVG now strokes the coin outline and the portrait
+  guide circle blue and fills the curved text black, so LightBurn and xTool Creative
+  Space can auto-assign a Score and an Engrave layer on import instead of importing
+  everything as one undifferentiated black layer.
 
 ### Changed
 
@@ -101,6 +116,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restored the standard wording of the README's `Buy Me a Coffee` section and moved it
   below `Copyright` as the final section. The body copy now matches the floating donate
   card in `src/DonateWidget.ts`, which had been showing visitors a different ask.
+- Moved the Export SVG Files / Reset Design buttons from a row below the previews into
+  the header, top-right, next to the new Display Settings gear icon.
+- Moved the Live Preview column to sit beside the tabbed editor instead of below it, so
+  both are visible at once on a desktop viewport.
+- On desktop (the `lg` Tailwind breakpoint and up) the page itself no longer scrolls;
+  below `lg`, where the two-column layout stacks into one, it falls back to normal
+  scrolling instead of clipping content that no longer fits. The header also now stacks
+  the title above the action buttons below the `sm` breakpoint, rather than sharing one
+  row - on phone-width screens (~390 px) that row previously overflowed horizontally,
+  which widened the mobile browser's layout viewport past the actual screen and pushed
+  the (fixed-position) Display Settings panel partly off-screen.
+- `SvgConfig.fontFamily` is now actually passed into `createCurvedText()` on export. It
+  was defined but never read, so the export always fell back to `createCurvedText()`'s
+  own hard-coded default regardless of what the config said.
 
 ### Removed
 
@@ -157,6 +186,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   settled on `0.25`. The bounds are now assigned first. Note that jsdom implements
   clamping but not step snapping, so the regression test exercises the clamping path and
   the snapping case was confirmed in Chrome.
+- The exported SVG never reflected a changed Portrait Size. `createActionButtons()`
+  captured the `portraitScale` primitive by value when the UI was built, so the export
+  handler always read that initial snapshot rather than the current value; the live
+  preview looked correct because it re-reads the value on every change. Fixed at the
+  time by passing a getter closure; superseded by the `displaySettings` object (mutated
+  in place) added with the Display Settings panel, which closes over the live values by
+  construction.
 
 ## [1.0.0] - 2025-12-18
 

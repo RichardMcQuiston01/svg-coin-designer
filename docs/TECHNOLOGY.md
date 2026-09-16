@@ -89,20 +89,34 @@ export function createMyComponent(config: MyConfig): HTMLDivElement {
 
 ### State and data flow
 
-`CoinEditor.ts` holds a single `CoinDesign` object as the source of truth, alongside a
-`portraitScale` value. Data flows one way, through callbacks:
+`CoinEditor.ts` holds two objects as the source of truth: a `CoinDesign` (the text and
+portraits) and a `CoinDisplaySettings` (portrait size, font, text offset), shared by
+both sides. Data flows one way, through callbacks:
 
-1. The user edits a component (for example `TextInput`).
+1. The user edits a component (for example `TextInput`, or a Display Settings control).
 2. The component invokes its `onChange` callback with the new value.
-3. `CoinEditor` mutates the corresponding field on the design.
-4. `CoinEditor` calls `updateCoinPreview()` to re-render that side.
+3. `CoinEditor` mutates the corresponding field on `coinDesign` or `displaySettings`.
+4. `CoinEditor` calls `updateCoinPreview()` to re-render the affected side(s).
 
 ```typescript
 interface CoinDesign {
   obverse: CoinSide;
   reverse: CoinSide;
 }
+
+interface CoinDisplaySettings {
+  portraitScale: number;
+  fontFamily: string;
+  textRadiusScale: number;
+}
 ```
+
+`displaySettings` is a single object mutated in place (`displaySettings.portraitScale =
+value`) rather than a reassigned primitive, so every closure captured when the UI was
+built - the export button included - always reads the current value. It persists to
+`localStorage` under `coinDesigner.displaySettings` (see `loadDisplaySettings()` /
+`saveDisplaySettings()` in `CoinEditor.ts`) and restores on reload. `coinDesign` does not
+currently persist.
 
 ### Error handling
 
@@ -140,8 +154,22 @@ Defaults live in `createDefaultProcessingOptions()`.
 | Element | Radius |
 | --- | --- |
 | Coin outline | `(1000 / 2) * 0.9` = 450 |
-| Text baseline | `coinRadius * 0.85` = 382.5 |
+| Text baseline | `coinRadius * textRadiusScale` (default 0.85 = 382.5) |
 | Portrait | `coinRadius * portraitScale` (default 0.85) |
+
+`portraitScale`, `fontFamily`, and `textRadiusScale` all come from `CoinDisplaySettings`
+(`createDefaultDisplaySettings()`), which the gear-icon Display Settings panel edits at
+runtime - Portrait Size, Font, and Text Offset respectively.
+
+### Laser software colors
+
+The coin outline and the portrait guide circle are stroked `LASER_SCORE_COLOR`
+(`#0000FF`); the curved text is filled `LASER_ENGRAVE_COLOR` (`#000000`). LightBurn and
+xTool Creative Space can both auto-create a layer per imported color, so a fresh import
+splits into a Score layer (the two circles) and an Engrave layer (the text) rather than
+one undifferentiated black layer. This follows the common convention those tools'
+communities use (black = fill/engrave, blue = line), not a spec either tool guarantees -
+see the color constants' doc comment in `svgGenerator.ts`.
 
 Curved text comes from `src/curvedText.ts`, which the live preview uses as well, so the
 screen and the exported file agree. For each curve it computes the arc length the string
@@ -176,10 +204,15 @@ Accurate as of this revision - see [ROADMAP.md](ROADMAP.md) for planned work.
 
 - `src/templates.ts` defines four templates but nothing imports it; there is no
   template picker in the UI.
-- Of the `SvgConfig` fields, only `portraitScale` affects output. `coinDiameter`,
-  `dpi`, `fontFamily`, and `fontSize` are currently unused - font family and size come
-  from `src/curvedText.ts` instead.
-- No `localStorage` persistence for the design; only the donation card's dismissal is
-  stored, so designs are still lost on reload.
-- The Portrait Size control updates both previews but has no effect on the exported SVG:
-  `createActionButtons()` captures `portraitScale` by value when the UI is built.
+- Of the `SvgConfig` fields, `portraitScale`, `fontFamily`, and `textRadiusScale` affect
+  output. `coinDiameter`, `dpi`, and `fontSize` are still unused - the actual font size
+  comes from `TEXT_FONT_SIZE_RATIO` in `src/curvedText.ts` instead.
+- No `localStorage` persistence for the design content (text and portraits) - only the
+  display settings (portrait size, font, text offset) and the donation card's dismissal
+  are stored, so a design's text and images are still lost on reload.
+- The exported curved text is a raw `<text>`/`<textPath>` element, not an outlined
+  vector path. xTool's own SVG-import guidance recommends converting text to paths
+  before import so it processes reliably; LightBurn generally handles `<text>` via its
+  own font substitution, which depends on a matching font being installed on that
+  machine. Converting text to paths on export (e.g. via an embedded font's glyph
+  outlines) would remove this dependency for both tools, but is not implemented.

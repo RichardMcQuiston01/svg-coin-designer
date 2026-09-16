@@ -39,9 +39,10 @@ The application follows a **component-based architecture** with clear separation
 
 ## Core Modules
 
-### 1. Types (`src/types/index.ts`)
+### 1. Types (`src/index.ts`)
 
-All TypeScript interfaces and types.
+All TypeScript interfaces and types. `src/` is flat - there is no `src/types/`
+subdirectory.
 
 #### Key Types:
 
@@ -63,6 +64,25 @@ interface CoinDesign {
 }
 ```
 
+**CoinDisplaySettings** - shared by the live preview and the SVG export; edited from the
+gear-icon Display Settings panel and persisted to `localStorage`
+```typescript
+interface CoinDisplaySettings {
+  portraitScale: number;   // portrait diameter as a fraction of the coin radius
+  fontFamily: string;      // curved text font-family, picked from FONT_OPTIONS
+  textRadiusScale: number; // curved text radius as a fraction of the coin radius
+}
+```
+
+**FontOption** - one entry in the Font picker
+```typescript
+interface FontOption {
+  id: string;
+  label: string;
+  value: string; // CSS font-family value
+}
+```
+
 **ImageProcessingOptions**
 ```typescript
 interface ImageProcessingOptions {
@@ -77,13 +97,13 @@ interface ImageProcessingOptions {
 
 ### 2. Components
 
-#### TextInput (`src/components/TextInput.ts`)
+#### TextInput (`src/TextInput.ts`)
 
 **Purpose**: Reusable text input with label and character counter.
 
 **Usage**:
 ```typescript
-import {createTextInput} from './components/TextInput';
+import {createTextInput} from './TextInput';
 
 const input = createTextInput({
   id: 'myInput',
@@ -104,14 +124,45 @@ document.body.appendChild(input);
 - `createTextInput(config: TextInputConfig): HTMLDivElement`
 - `updateTextInputValue(inputId: string, value: string): void`
 
-#### ImageUploader (`src/components/ImageUploader.ts`)
+#### NumberInput (`src/NumberInput.ts`)
+
+**Purpose**: Labelled range slider with a live numeric readout. Backs every Display
+Settings control (Portrait Size, Text Offset).
+
+**Usage**:
+```typescript
+import {createNumberInput} from './NumberInput';
+
+const slider = createNumberInput({
+  id: 'portraitScale',
+  name: 'portraitScale',
+  label: 'Portrait Size',
+  value: 0.85,
+  min: 0.25,
+  max: 0.9,
+  step: 0.05,
+  unit: '%',
+  helperText: 'Adjust the portrait diameter as a percentage of the coin radius',
+  onChange: (value: number) => {
+    console.log('Value changed:', value);
+  },
+});
+
+document.body.appendChild(slider);
+```
+
+**API**:
+- `createNumberInput(config: NumberInputConfig): HTMLDivElement`
+- `updateNumberInputValue(inputId: string, value: number): void`
+
+#### ImageUploader (`src/ImageUploader.ts`)
 
 **Purpose**: Image upload with automatic processing.
 
 **Usage**:
 ```typescript
-import {createImageUploader} from './components/ImageUploader';
-import {createDefaultProcessingOptions} from './utils/imageProcessing';
+import {createImageUploader} from './ImageUploader';
+import {createDefaultProcessingOptions} from './imageProcessing';
 
 const uploader = createImageUploader({
   id: 'imageUpload',
@@ -133,13 +184,15 @@ document.body.appendChild(uploader);
 **API**:
 - `createImageUploader(config: ImageUploaderConfig): HTMLDivElement`
 
-#### CoinPreview (`src/components/CoinPreview.ts`)
+#### CoinPreview (`src/CoinPreview.ts`)
 
-**Purpose**: Live preview of coin design.
+**Purpose**: Live preview of coin design. Renders the same curved-text geometry
+(`src/curvedText.ts`) as the SVG export, so the screen and the exported file agree.
 
 **Usage**:
 ```typescript
-import {createCoinPreview, updateCoinPreview} from './components/CoinPreview';
+import {createCoinPreview, updateCoinPreview} from './CoinPreview';
+import {createDefaultDisplaySettings} from './svgGenerator';
 
 const preview = createCoinPreview({
   id: 'preview',
@@ -150,25 +203,39 @@ const preview = createCoinPreview({
     coinPortrait: null,
     originalImage: null,
   },
+  settings: createDefaultDisplaySettings(), // optional; defaults if omitted
 });
 
 document.body.appendChild(preview);
 
 // Update preview
-updateCoinPreview('preview', updatedCoinSide);
+updateCoinPreview('preview', updatedCoinSide, updatedSettings);
 ```
 
 **API**:
 - `createCoinPreview(config: CoinPreviewConfig): HTMLDivElement`
-- `updateCoinPreview(previewId: string, coinSide: CoinSide): void`
+- `updateCoinPreview(previewId: string, coinSide: CoinSide, settings?: CoinDisplaySettings): void`
 
-#### CoinEditor (`src/components/CoinEditor.ts`)
+#### DonateWidget (`src/DonateWidget.ts`)
+
+**Purpose**: Dismissible floating donation card, mounted separately from the editor so
+it stays fixed on screen while the page scrolls. Dismissal is stored in `localStorage`
+under `coinDesigner.donateDismissed`.
+
+**Usage**:
+```typescript
+import {mountDonateWidget} from './DonateWidget';
+
+mountDonateWidget(); // appends the card to document.body if not already dismissed
+```
+
+#### CoinEditor (`src/CoinEditor.ts`)
 
 **Purpose**: Main editor orchestrating all components.
 
 **Usage**:
 ```typescript
-import {createCoinEditor} from './components/CoinEditor';
+import {createCoinEditor} from './CoinEditor';
 
 const design = createCoinEditor('app');
 console.log('Current design:', design);
@@ -177,9 +244,15 @@ console.log('Current design:', design);
 **API**:
 - `createCoinEditor(containerId: string): CoinDesign`
 
+`createCoinEditor` builds the header (title, gear-icon Display Settings, Export/Reset),
+the tabbed Obverse/Reverse editor, and the live preview column, then returns the
+`CoinDesign` it will keep mutating as the user edits. `CoinDisplaySettings` is created
+internally (loaded from `localStorage` if present) and is not returned - reach it only
+through the UI.
+
 ### 3. Utilities
 
-#### Image Processing (`src/utils/imageProcessing.ts`)
+#### Image Processing (`src/imageProcessing.ts`)
 
 **Purpose**: Image manipulation for coin portraits.
 
@@ -201,7 +274,7 @@ function createDefaultProcessingOptions(): ImageProcessingOptions
 
 **Example**:
 ```typescript
-import {processImage, createDefaultProcessingOptions} from './utils/imageProcessing';
+import {processImage, createDefaultProcessingOptions} from './imageProcessing';
 
 const options = createDefaultProcessingOptions();
 options.contrastAdjustment = 20; // More contrast
@@ -226,9 +299,12 @@ if (result.success && result.imageData) {
 7. Apply circular crop (optional)
 8. Export as base64
 
-#### SVG Generator (`src/utils/svgGenerator.ts`)
+#### SVG Generator (`src/svgGenerator.ts`)
 
-**Purpose**: Generate laser-engravable SVG files.
+**Purpose**: Generate laser-engravable SVG files. Also the home of the display-settings
+defaults and constants (`createDefaultDisplaySettings`, `FONT_OPTIONS`,
+`LASER_ENGRAVE_COLOR`, `LASER_SCORE_COLOR`) that `CoinPreview.ts` and `CoinEditor.ts`
+import, per the documented dependency direction in [TECHNOLOGY.md](TECHNOLOGY.md).
 
 **Key Functions**:
 
@@ -248,8 +324,22 @@ function downloadCoinSvgs(
   baseName: string
 ): void
 
-// Create default config
+// Create default config (coinDiameter, dpi, fontSize, plus the display-settings defaults)
 function createDefaultSvgConfig(): SvgConfig
+
+// Create just the display-settings defaults (portraitScale, fontFamily, textRadiusScale)
+function createDefaultDisplaySettings(): CoinDisplaySettings
+```
+
+**Key Constants**:
+
+```typescript
+// The Font picker's options; `value` is used as-is as the CSS font-family
+const FONT_OPTIONS: FontOption[]
+
+// Stroke/fill colors applied to the export so LightBurn/xTool can auto-layer by color
+const LASER_ENGRAVE_COLOR = '#000000'; // curved text
+const LASER_SCORE_COLOR = '#0000FF';   // coin outline + portrait guide circle
 ```
 
 **Example**:
@@ -258,11 +348,11 @@ import {
   generateCoinSvgs,
   createDefaultSvgConfig,
   downloadCoinSvgs
-} from './utils/svgGenerator';
+} from './svgGenerator';
 
 const config = createDefaultSvgConfig();
-config.coinDiameter = 50; // 50mm coin
-config.portraitScale = 0.7; // 70% of diameter
+config.coinDiameter = 50; // 50mm coin (not currently applied to the output - see below)
+config.portraitScale = 0.7; // 70% of the coin radius
 
 const result = await generateCoinSvgs(coinDesign, config);
 if (result.success) {
@@ -270,32 +360,43 @@ if (result.success) {
 }
 ```
 
+`SvgConfig.coinDiameter`, `.dpi`, and `.fontSize` are accepted but not currently applied
+to the output - see [TECHNOLOGY.md's Known Gaps](TECHNOLOGY.md#known-gaps).
+`.portraitScale`, `.fontFamily`, and `.textRadiusScale` do affect it.
+
 **SVG Structure**:
 ```xml
 <svg viewBox="0 0 1000 1000">
-  <!-- Coin outline -->
+  <!-- Coin outline (Score: stroke="#0000FF") -->
   <circle (outer rim) />
-  
+
+  <!-- Portrait guide circle (Score: stroke="#0000FF", dashed) -->
+  <circle (dashed) />
+
   <!-- Portrait with circular clip path -->
   <clipPath id="portraitClip">
     <circle />
   </clipPath>
   <image clip-path="url(#portraitClip)" />
-  
-  <!-- Curved text paths -->
+
+  <!-- Curved text paths (Engrave: fill="#000000") -->
   <path id="topTextPath" />
-  <text><textPath href="#topTextPath" /></text>
-  
+  <text fill="#000000"><textPath href="#topTextPath" /></text>
+
   <path id="bottomTextPath" />
-  <text><textPath href="#bottomTextPath" /></text>
+  <text fill="#000000"><textPath href="#bottomTextPath" /></text>
 </svg>
 ```
+
+See [QUICK_START.md's Laser Software Import section](QUICK_START.md#laser-software-import)
+for what the Score/Engrave split is for, and a caveat about `<text>` vs. outline paths
+when importing into xTool Creative Space.
 
 ## Extending the Application
 
 ### Adding a New Component
 
-1. Create file in `src/components/`:
+1. Create file in `src/` (flat - no `components/` subdirectory):
 ```typescript
 // MyComponent.ts
 export interface MyComponentConfig {
@@ -314,12 +415,12 @@ export function createMyComponent(
 
 2. Import and use:
 ```typescript
-import {createMyComponent} from './components/MyComponent';
+import {createMyComponent} from './MyComponent';
 ```
 
 ### Adding Templates
 
-See `src/utils/templates.ts` for example implementation.
+See `src/templates.ts` for example implementation.
 
 **Steps**:
 1. Define template structure
@@ -379,8 +480,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#your-color',
-        secondary: '#your-color',
+        brand: {
+          primary: '#your-color',
+          secondary: '#your-color',
+        },
       },
     },
   },
@@ -389,11 +492,11 @@ export default {
 
 #### Custom CSS
 
-Add to `src/styles/main.css`:
+Add to `src/main.css`:
 ```css
 @layer components {
   .my-custom-class {
-    @apply bg-blue-500 text-white;
+    @apply bg-brand-primary text-white;
   }
 }
 ```
@@ -421,6 +524,15 @@ if (result.success && result.data) {
 
 ## Testing
 
+### Unit Testing
+
+Vitest 4 with jsdom is already in place, colocated with the code it covers as
+`src/*.test.ts` (41 tests as of this revision - see `npm run test`). New suites should
+follow the same pattern: the default environment is `node`, and a test file that needs a
+DOM opts in per-file with a `@vitest-environment jsdom` docblock, which keeps pure-logic
+tests off jsdom and the suite fast. See [TECHNOLOGY.md](TECHNOLOGY.md) and the
+`Testing` section of the main [README](../README.md) for the available scripts.
+
 ### Manual Testing Checklist
 
 - [ ] Upload various image formats (PNG, JPG, WEBP)
@@ -430,15 +542,14 @@ if (result.success && result.data) {
 - [ ] Test special characters in text
 - [ ] Generate SVG with all fields populated
 - [ ] Generate SVG with minimal fields
-- [ ] Test on different screen sizes
+- [ ] Change Portrait Size, Font, and Text Offset in Display Settings, and confirm both
+      the live preview and the exported SVG reflect them
+- [ ] Test on different screen sizes, including a desktop width (confirm no page
+      scrolling) and a phone width (confirm no horizontal overflow)
 - [ ] Test in different browsers
 
-### Unit Testing (Future)
-
-Consider adding:
-- Jest for unit tests
-- Testing Library for component tests
-- Playwright for e2e tests
+Consider adding Playwright for browser-driven e2e coverage of the above; not currently
+in the project.
 
 ## Performance Optimization
 
