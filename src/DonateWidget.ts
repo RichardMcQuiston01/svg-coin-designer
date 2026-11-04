@@ -10,7 +10,7 @@ import donateQrSvg from './assets/donate-qr.svg?raw';
 
 /** Donation page the widget links to */
 export const DONATE_URL =
-  'https://donate.stripe.com/00w5kD3Gj1Xo9v7gVOcs800';
+  'https://ko-fi.com/P1V529Z7ZP';
 
 /** localStorage key recording that the user has dismissed the widget */
 export const DONATE_DISMISSED_KEY = 'coinDesigner.donateDismissed';
@@ -130,7 +130,7 @@ export function createDonateWidget(
     'hover:text-brand-primary-hover hover:underline rounded',
     'focus:outline-none focus:ring-2 focus:ring-brand-secondary',
   ].join(' ');
-  donateLink.textContent = 'Donate via Stripe →';
+  donateLink.textContent = 'Support on Ko-fi →';
 
   content.appendChild(message);
   content.appendChild(donateLink);
